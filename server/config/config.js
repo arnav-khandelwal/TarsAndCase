@@ -18,7 +18,7 @@ module.exports = {
 
   
   // Gemini AI API configuration
-  geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiApiKey: process.env.GEMINI_API_KEY || 'AIzaSyDOi60hbjvzD1NHi-xULzUCMj0HdITftnM',
   REFERENCE_IMAGE_PATH: process.env.REFERENCE_IMAGE_PATH || './uploads/reference.jpg',
   
   // File upload configuration

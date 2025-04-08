@@ -34,9 +34,13 @@ exports.createEntry = async (req, res) => {
       const referenceImageBase64 = referenceImage.toString('base64');
       const uploadedImageBase64 = uploadedImage.toString('base64');
   
-      const prompt = `Compare these two images and provide a similarity score out of 10. 
-        The score should be a single number between 0 and 10, where 0 is completely different 
-        and 10 is identical. Only respond with the number, no additional text or explanation.`;
+      const prompt = `
+      Analyze the similarity between two images on a scale of 1.00-10.00. 
+      Consider shape, color, composition, and overall visual resemblance. 
+      Provide a decimal score that reflects partial matching, not just binary matching. 
+      Penalize significant differences but allow for color and minor stylistic variations.
+      
+      Only respond with the number, no additional text or explanation.`;
   
       const result = await model.generateContent([
         prompt,
