@@ -19,9 +19,6 @@ exports.createEntry = async (req, res) => {
       if (!serialNumber) {
         return res.status(400).json({ message: 'Serial number is required' });
       }
-  
-      // Construct proper URL (works for both dev and production)
-      const imageUrl = `/uploads/${req.file.filename}`;
 
       // Process with Gemini AI
       const model = genAI.getGenerativeModel({ 
@@ -67,7 +64,7 @@ exports.createEntry = async (req, res) => {
         user: req.user.id,
         serialNumber: parseInt(serialNumber), // Ensure it's stored as a number
         imageUrl: `/uploads/${req.file.filename}`,
-        aiResponse: `Similarity score: ${score.toFixed(1)}/10`,
+        aiResponse: `${score.toFixed(1)}`,
         aiScore: score
       });
       await newEntry.save();
@@ -95,7 +92,7 @@ exports.createEntry = async (req, res) => {
 // Get all entries for current user
 exports.getUserEntries = async (req, res) => {
   try {
-    const entries = await TableEntry.find({ user: req.user.id }).sort({ serialNumber: -1 });
+    const entries = await TableEntry.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(entries);
   } catch (err) {
     console.error(err.message);
@@ -121,24 +118,66 @@ exports.getAllEntries = async (req, res) => {
 
 // Delete entry
 exports.deleteEntry = async (req, res) => {
-  try {
-    // Find entry
-    const entry = await TableEntry.findById(req.params.id);
-    
-    // Check if entry exists
-    if (!entry) {
-      return res.status(404).json({ message: 'Entry not found' });
+    try {
+      // Find entry
+      const entry = await TableEntry.findById(req.params.id);
+      
+      // Check if entry exists
+      if (!entry) {
+        return res.status(404).json({ message: 'Entry not found' });
+      }
+      
+      // Check if user owns the entry or is admin
+      if (entry.user.toString() !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: 'Not authorized' });
+      }
+      
+      await TableEntry.deleteOne({ _id: entry._id });
+      res.json({ message: 'Entry removed' });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    
-    // Check if user owns the entry or is admin
-    if (entry.user.toString() !== req.user.id && !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Not authorized' });
+  };
+  
+  // Update admin score
+  exports.updateAdminScore = async (req, res) => {
+    try {
+      const { adminScore } = req.body;
+      
+      // Validate admin score
+      if (adminScore === undefined || adminScore === null) {
+        return res.status(400).json({ message: 'Admin score is required' });
+      }
+      
+      const score = parseFloat(adminScore);
+      
+      // Validate score is a number between 0 and 10
+      if (isNaN(score) || score < 0 || score > 10) {
+        return res.status(400).json({ message: 'Score must be a number between 0 and 10' });
+      }
+      
+      // Check if user is admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Not authorized' });
+      }
+      
+      // Find and update entry
+      const entry = await TableEntry.findById(req.params.id);
+      
+      if (!entry) {
+        return res.status(404).json({ message: 'Entry not found' });
+      }
+      
+      entry.adminScore = score;
+      await entry.save();
+      
+      res.json({ 
+        success: true, 
+        entry
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    
-    await entry.remove();
-    res.json({ message: 'Entry removed' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-};
+  };

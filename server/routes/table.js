@@ -24,4 +24,9 @@ router.get('/all', auth, tableController.getAllEntries);
 // @access  Private
 router.delete('/:id', auth, tableController.deleteEntry);
 
+// @route   PUT api/table/score/:id
+// @desc    Update admin score for an entry
+// @access  Private (Admin)
+router.put('/score/:id', auth, tableController.updateAdminScore);
+
 module.exports = router;

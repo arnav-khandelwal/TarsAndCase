@@ -2,7 +2,7 @@ import { useState } from 'react';
 import TableRow from '../TableRow/TableRow';
 import './DataTable.css';
 
-const DataTable = ({ onSuccess, onError, onRowSubmit }) => {
+const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill(0) }) => {
   const [tableData, setTableData] = useState(Array(11).fill().map(() => ({
     file: null,
     aiResponse: ''
@@ -16,8 +16,7 @@ const DataTable = ({ onSuccess, onError, onRowSubmit }) => {
   };
 
   // Handle individual row submission
-// In DataTable.jsx
-const handleRowSubmit = async (rowIndex, formData) => {
+  const handleRowSubmit = async (rowIndex, formData) => {
     // Debug: Check what's received
     console.log('DataTable received formData:', formData);
     
@@ -32,12 +31,17 @@ const handleRowSubmit = async (rowIndex, formData) => {
       }
   
       const response = await onRowSubmit(rowIndex, formData);
+      
+      // Notify parent about success after submission
+      onSuccess(`Row ${rowIndex + 1} successfully submitted!`);
+      
       return {
         aiResponse: `Similarity score: ${response.aiScore}/10`,
         aiScore: response.aiScore
       };
     } catch (error) {
       console.error('Row submission error:', error);
+      onError(error.message || 'Failed to submit image');
       throw error;
     }
   };
@@ -88,6 +92,7 @@ const handleRowSubmit = async (rowIndex, formData) => {
               <th className="image-header">Image</th>
               <th className="action-header">Action</th>
               <th className="ai-header">AI Output</th>
+              <th className="max-score-header">Max Score</th>
             </tr>
           </thead>
           <tbody>
@@ -97,6 +102,7 @@ const handleRowSubmit = async (rowIndex, formData) => {
                 rowIndex={index}
                 onDataChange={handleRowDataChange}
                 onRowSubmit={handleRowSubmit}
+                maxScore={maxScores[index]}
               />
             ))}
           </tbody>

@@ -5,6 +5,7 @@ import DataTable from '../components/DataTable/DataTable';
 
 const TablePage = () => {
   const [entries, setEntries] = useState([]);
+  const [maxScores, setMaxScores] = useState(Array(11).fill(0)); // Initialize max scores for all 11 rows
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,19 @@ const TablePage = () => {
     }
   }, [navigate]);
   
-  // Load user's entries from database
+  // Set up a refresh interval to periodically update the entries
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        loadEntries();
+      }
+    }, 10000); // Refresh every 10 seconds
+    
+    return () => clearInterval(refreshInterval); // Clean up on unmount
+  }, []);
+  
+  // Load user's entries from database and calculate max scores
   const loadEntries = async () => {
     setLoading(true);
     try {
@@ -33,6 +46,9 @@ const TablePage = () => {
       
       const res = await axios.get('/api/table/user', config);
       setEntries(res.data);
+      
+      // Calculate max scores for each row (serialNumber)
+      calculateMaxScores(res.data);
     } catch (err) {
       console.error(err);
       setError('Failed to load entries');
@@ -44,9 +60,27 @@ const TablePage = () => {
     setLoading(false);
   };
   
+  // Calculate max scores for each row based on entries
+  const calculateMaxScores = (entriesData) => {
+    // Initialize array with 11 zeros (for rows 1-11)
+    const newMaxScores = Array(11).fill(0);
+    
+    // Loop through all entries to find max score for each row
+    entriesData.forEach(entry => {
+      const rowIndex = entry.serialNumber - 1; // Convert to 0-based index
+      const score = parseFloat(entry.aiResponse) || 0;
+      
+      // Update max score if this entry has a higher score
+      if (rowIndex >= 0 && rowIndex < 11 && score > newMaxScores[rowIndex]) {
+        newMaxScores[rowIndex] = score;
+      }
+    });
+    
+    setMaxScores(newMaxScores);
+  };
+  
   // Process row submission
-  // In TablePage.jsx
-const handleRowSubmit = async (rowIndex, formData) => {
+  const handleRowSubmit = async (rowIndex, formData) => {
     try {
       const config = {
         headers: {
@@ -56,6 +90,9 @@ const handleRowSubmit = async (rowIndex, formData) => {
       };
       
       const response = await axios.post('/api/table', formData, config);
+      
+      // Reload entries immediately after a successful submission
+      await loadEntries();
       
       return {
         aiScore: response.data.aiScore
@@ -67,7 +104,7 @@ const handleRowSubmit = async (rowIndex, formData) => {
   };
   
   // Handle successful submission
-  const handleSuccess = (message) => {
+  const handleSuccess = async (message) => {
     setSuccess(message);
     setError('');
     
@@ -77,7 +114,7 @@ const handleRowSubmit = async (rowIndex, formData) => {
     }, 3000);
     
     // Reload entries to ensure we have the latest data
-    loadEntries();
+    await loadEntries();
   };
   
   // Handle submission error
@@ -108,6 +145,7 @@ const handleRowSubmit = async (rowIndex, formData) => {
         onSuccess={handleSuccess}
         onError={handleError}
         onRowSubmit={handleRowSubmit}
+        maxScores={maxScores}
       />
       
       {/* Display Entries */}
@@ -136,7 +174,8 @@ const handleRowSubmit = async (rowIndex, formData) => {
                     {entry.aiResponse && (
                     <div className="ai-response">
                         <h4>AI Response:</h4>
-                        <p>{entry.aiResponse}</p>
+                        <p>Similarity score: {entry.aiResponse}</p>
+                        <p>Max score (for this row): {maxScores[entry.serialNumber - 1]}</p>
                     </div>
                     )}
                     <div className="entry-date">

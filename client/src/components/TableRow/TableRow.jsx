@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './TableRow.css';
 
-const TableRow = ({ rowIndex, onDataChange, onRowSubmit }) => {
+const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
   const [rowData, setRowData] = useState({
     file: null,
     aiResponse: ''
@@ -10,7 +10,7 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit }) => {
   const [submitting, setSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
-    console.log('Files selected:', e.target.files); // Add this line
+    console.log('Files selected:', e.target.files);
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
       setFileName(file.name);
@@ -20,9 +20,7 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit }) => {
     }
   };
 
-  // In TableRow.jsx - modify the handleSubmit function
-// In TableRow.jsx
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!rowData.file) {
       alert('Please select an image first');
       return;
@@ -55,6 +53,7 @@ const handleSubmit = async () => {
       // Reset file input
       setFileName('');
       document.getElementById(`file-${rowIndex}`).value = '';
+      
     } catch (error) {
       console.error('Submission error:', error);
       alert(error.message || 'Failed to submit');
@@ -96,6 +95,13 @@ const handleSubmit = async () => {
           <div className="ai-response-text">{rowData.aiResponse}</div>
         ) : (
           <span className="no-response">No response yet</span>
+        )}
+      </td>
+      <td className="max-score-cell">
+        {maxScore > 0 ? (
+          <div className="max-score-text">{maxScore.toFixed(1)}</div>
+        ) : (
+          <span className="no-score">0</span>
         )}
       </td>
     </tr>

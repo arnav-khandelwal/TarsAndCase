@@ -99,3 +99,24 @@
       padding: 0.5rem;
     }
   }
+  /* Add this to your existing DataTable.css file */
+
+.max-score-header {
+    width: 100px;
+    text-align: center;
+  }
+  
+  .max-score-cell {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .max-score-text {
+    font-weight: bold;
+    color: #0d6efd;
+  }
+  
+  .no-score {
+    color: #6c757d;
+    font-style: italic;
+  }

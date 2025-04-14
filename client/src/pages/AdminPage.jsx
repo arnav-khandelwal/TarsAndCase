@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import './AdminPage.css'; // Assuming you have a CSS file for styling
 const AdminPage = () => {
   const [entries, setEntries] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scores, setScores] = useState({});
+  const [feedback, setFeedback] = useState('');
   
   const navigate = useNavigate();
   
@@ -30,6 +32,14 @@ const AdminPage = () => {
       };
       
       const res = await axios.get('/api/table/all', config);
+      
+      // Initialize scores object with data from backend
+      const initialScores = {};
+      res.data.forEach(entry => {
+        initialScores[entry._id] = entry.adminScore || 0;
+      });
+      
+      setScores(initialScores);
       setEntries(res.data);
     } catch (err) {
       console.error(err);
@@ -73,6 +83,69 @@ const AdminPage = () => {
     }
   };
 
+  // Handle score input change
+  const handleScoreChange = (entryId, value) => {
+    // Validate input to ensure it's a number between 0 and 10
+    let score = parseFloat(value);
+    
+    if (isNaN(score)) {
+      score = 0;
+    } else if (score < 0) {
+      score = 0;
+    } else if (score > 10) {
+      score = 10;
+    }
+    
+    setScores({
+      ...scores,
+      [entryId]: score
+    });
+  };
+
+  // Submit admin score
+  const handleScoreSubmit = async (entryId) => {
+    try {
+      const config = {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const adminScore = scores[entryId];
+      
+      await axios.put(`/api/table/score/${entryId}`, { adminScore }, config);
+      
+      // Update the entry in the local state
+      const updatedEntries = entries.map(entry => 
+        entry._id === entryId ? { ...entry, adminScore } : entry
+      );
+      
+      setEntries(updatedEntries);
+      setFeedback('Score saved successfully');
+      
+      // Clear feedback after 3 seconds
+      setTimeout(() => {
+        setFeedback('');
+      }, 3000);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to save score');
+      
+      // Clear error after 3 seconds
+      setTimeout(() => {
+        setError('');
+      }, 3000);
+    }
+  };
+
+  // Calculate total score
+  const calculateTotalScore = (aiScore, adminScore) => {
+    const ai = parseFloat(aiScore) || 0;
+    const admin = parseFloat(adminScore) || 0;
+    return (ai + admin).toFixed(1);
+  };
+
   return (
     <div className="admin-container">
       <div className="admin-header">
@@ -81,6 +154,7 @@ const AdminPage = () => {
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}
+      {feedback && <div className="alert alert-success">{feedback}</div>}
       
       {/* All Entries */}
       <div className="all-entries">
@@ -97,6 +171,8 @@ const AdminPage = () => {
                 <th>User</th>
                 <th>Image</th>
                 <th>AI Response</th>
+                <th>Our Score</th>
+                <th>Total Score</th>
                 <th>Created At</th>
                 <th>Actions</th>
               </tr>
@@ -114,6 +190,28 @@ const AdminPage = () => {
                     />
                   </td>
                   <td>{entry.aiResponse || 'No AI response'}</td>
+                  <td>
+                    <div className="score-input-container">
+                      <input 
+                        type="number" 
+                        min="0" 
+                        max="10" 
+                        step="0.1"
+                        className="form-control admin-score-input"
+                        value={scores[entry._id] || 0}
+                        onChange={(e) => handleScoreChange(entry._id, e.target.value)}
+                      />
+                      <button 
+                        className="btn btn-sm btn-primary save-score-btn"
+                        onClick={() => handleScoreSubmit(entry._id)}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </td>
+                  <td className="total-score">
+                    {calculateTotalScore(entry.aiResponse, scores[entry._id])}
+                  </td>
                   <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
                   <td>
                     <button 

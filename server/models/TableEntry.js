@@ -18,6 +18,10 @@ const TableEntrySchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  adminScore: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now
