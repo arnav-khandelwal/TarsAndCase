@@ -2,7 +2,14 @@ import { useState } from 'react';
 import TableRow from '../TableRow/TableRow';
 import './DataTable.css';
 
-const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill(0) }) => {
+const DataTable = ({ 
+  onSuccess, 
+  onError, 
+  onRowSubmit, 
+  maxScores = Array(11).fill(0),
+  submissionLimits = {},
+  maxSubmissionsPerRow = 5
+}) => {
   const [tableData, setTableData] = useState(Array(11).fill().map(() => ({
     file: null,
     aiResponse: ''
@@ -17,6 +24,13 @@ const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill
 
   // Handle individual row submission
   const handleRowSubmit = async (rowIndex, formData) => {
+    // Check if user has reached submission limit for this row
+    const rowLimits = submissionLimits[rowIndex + 1];
+    if (rowLimits && rowLimits.remaining <= 0) {
+      onError(`You've reached the maximum limit of ${maxSubmissionsPerRow} submissions for row #${rowIndex + 1}`);
+      throw new Error(`You've reached the maximum limit of ${maxSubmissionsPerRow} submissions for row #${rowIndex + 1}`);
+    }
+    
     // Debug: Check what's received
     console.log('DataTable received formData:', formData);
     
@@ -37,7 +51,8 @@ const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill
       
       return {
         aiResponse: `Similarity score: ${response.aiScore}/10`,
-        aiScore: response.aiScore
+        aiScore: response.aiScore,
+        submissionsRemaining: response.submissionsRemaining
       };
     } catch (error) {
       console.error('Row submission error:', error);
@@ -82,6 +97,18 @@ const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill
     }
   };
 
+  // Calculate submissions remaining for a row
+  const getSubmissionsRemaining = (rowIndex) => {
+    const rowLimits = submissionLimits[rowIndex + 1];
+    if (!rowLimits) return maxSubmissionsPerRow;
+    return rowLimits.remaining;
+  };
+
+  // Check if a row has reached its submission limit
+  const isRowLimitReached = (rowIndex) => {
+    return getSubmissionsRemaining(rowIndex) <= 0;
+  };
+
   return (
     <div className="data-table">
       <form onSubmit={handleSubmit}>
@@ -93,6 +120,7 @@ const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill
               <th className="action-header">Action</th>
               <th className="ai-header">AI Output</th>
               <th className="max-score-header">Max Score</th>
+              <th className="submissions-header">Submissions</th>
             </tr>
           </thead>
           <tbody>
@@ -103,6 +131,9 @@ const DataTable = ({ onSuccess, onError, onRowSubmit, maxScores = Array(11).fill
                 onDataChange={handleRowDataChange}
                 onRowSubmit={handleRowSubmit}
                 maxScore={maxScores[index]}
+                submissionsRemaining={getSubmissionsRemaining(index)}
+                isLimitReached={isRowLimitReached(index)}
+                maxSubmissions={maxSubmissionsPerRow}
               />
             ))}
           </tbody>

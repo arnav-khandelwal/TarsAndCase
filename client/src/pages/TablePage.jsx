@@ -5,7 +5,9 @@ import DataTable from '../components/DataTable/DataTable';
 
 const TablePage = () => {
   const [entries, setEntries] = useState([]);
-  const [maxScores, setMaxScores] = useState(Array(11).fill(0)); // Initialize max scores for all 11 rows
+  const [maxScores, setMaxScores] = useState(Array(11).fill(0));
+  const [submissionLimits, setSubmissionLimits] = useState({});
+  const [maxSubmissionsPerRow, setMaxSubmissionsPerRow] = useState(5); // Default value
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,10 +47,18 @@ const TablePage = () => {
       };
       
       const res = await axios.get('/api/table/user', config);
-      setEntries(res.data);
       
-      // Calculate max scores for each row (serialNumber)
-      calculateMaxScores(res.data);
+      // Handle the updated response format
+      if (res.data.entries) {
+        setEntries(res.data.entries);
+        calculateMaxScores(res.data.entries);
+        setSubmissionLimits(res.data.submissionLimits || {});
+        setMaxSubmissionsPerRow(res.data.maxSubmissionsPerRow || 5);
+      } else {
+        // Handle backward compatibility
+        setEntries(res.data);
+        calculateMaxScores(res.data);
+      }
     } catch (err) {
       console.error(err);
       setError('Failed to load entries');
@@ -62,15 +72,12 @@ const TablePage = () => {
   
   // Calculate max scores for each row based on entries
   const calculateMaxScores = (entriesData) => {
-    // Initialize array with 11 zeros (for rows 1-11)
     const newMaxScores = Array(11).fill(0);
     
-    // Loop through all entries to find max score for each row
     entriesData.forEach(entry => {
       const rowIndex = entry.serialNumber - 1; // Convert to 0-based index
       const score = parseFloat(entry.aiResponse) || 0;
       
-      // Update max score if this entry has a higher score
       if (rowIndex >= 0 && rowIndex < 11 && score > newMaxScores[rowIndex]) {
         newMaxScores[rowIndex] = score;
       }
@@ -82,6 +89,12 @@ const TablePage = () => {
   // Process row submission
   const handleRowSubmit = async (rowIndex, formData) => {
     try {
+      // Check if user has reached the submission limit for this row
+      const currentRowLimits = submissionLimits[rowIndex + 1];
+      if (currentRowLimits && currentRowLimits.remaining <= 0) {
+        throw new Error(`You've reached the maximum limit of ${maxSubmissionsPerRow} submissions for row #${rowIndex + 1}`);
+      }
+      
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -95,11 +108,12 @@ const TablePage = () => {
       await loadEntries();
       
       return {
-        aiScore: response.data.aiScore
+        aiScore: response.data.aiScore,
+        submissionsRemaining: response.data.submissionsRemaining || 0
       };
     } catch (err) {
       console.error('Submission error:', err);
-      throw new Error(err.response?.data?.message || 'Failed to submit entry');
+      throw new Error(err.response?.data?.message || err.message || 'Failed to submit entry');
     }
   };
   
@@ -139,6 +153,12 @@ const TablePage = () => {
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
       
+      <div className="submission-limits-info">
+        <p className="info-text">
+          <i className="bi bi-info-circle"></i> You can submit a maximum of {maxSubmissionsPerRow} images per row.
+        </p>
+      </div>
+      
       {/* Data Entry Table */}
       <h2>Select Images</h2>
       <DataTable 
@@ -146,6 +166,8 @@ const TablePage = () => {
         onError={handleError}
         onRowSubmit={handleRowSubmit}
         maxScores={maxScores}
+        submissionLimits={submissionLimits}
+        maxSubmissionsPerRow={maxSubmissionsPerRow}
       />
       
       {/* Display Entries */}

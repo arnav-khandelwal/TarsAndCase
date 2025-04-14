@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import './TableRow.css';
 
-const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
+const TableRow = ({ 
+  rowIndex, 
+  onDataChange, 
+  onRowSubmit, 
+  maxScore = 0,
+  submissionsRemaining = 5,
+  isLimitReached = false,
+  maxSubmissions = 5
+}) => {
   const [rowData, setRowData] = useState({
     file: null,
     aiResponse: ''
@@ -10,6 +18,13 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
   const [submitting, setSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
+    // Don't allow file selection if limit is reached
+    if (isLimitReached) {
+      alert(`You've reached the maximum limit of ${maxSubmissions} submissions for row #${rowIndex + 1}`);
+      e.target.value = '';
+      return;
+    }
+    
     console.log('Files selected:', e.target.files);
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -21,6 +36,12 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
   };
 
   const handleSubmit = async () => {
+    // Don't allow submission if limit is reached
+    if (isLimitReached) {
+      alert(`You've reached the maximum limit of ${maxSubmissions} submissions for row #${rowIndex + 1}`);
+      return;
+    }
+    
     if (!rowData.file) {
       alert('Please select an image first');
       return;
@@ -53,7 +74,6 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
       // Reset file input
       setFileName('');
       document.getElementById(`file-${rowIndex}`).value = '';
-      
     } catch (error) {
       console.error('Submission error:', error);
       alert(error.message || 'Failed to submit');
@@ -63,7 +83,7 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
   };
   
   return (
-    <tr>
+    <tr className={isLimitReached ? 'row-limit-reached' : ''}>
       <td className="serial-number">{rowIndex + 1}</td>
       <td className="file-cell">
         <div className="file-input-container">
@@ -73,10 +93,13 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
             onChange={handleFileChange}
             accept="image/*"
             className="file-input"
-            disabled={submitting}
+            disabled={submitting || isLimitReached}
           />
-          <label htmlFor={`file-${rowIndex}`} className="file-label">
-            {fileName || 'Choose image'}
+          <label 
+            htmlFor={`file-${rowIndex}`} 
+            className={`file-label ${isLimitReached ? 'disabled' : ''}`}
+          >
+            {(isLimitReached ? 'Limit reached' : '')}
           </label>
         </div>
       </td>
@@ -85,7 +108,7 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
           type="button" 
           className="btn btn-sm btn-primary row-submit-btn" 
           onClick={handleSubmit}
-          disabled={submitting || !rowData.file}
+          disabled={submitting || !rowData.file || isLimitReached}
         >
           {submitting ? 'Processing...' : 'Submit'}
         </button>
@@ -103,6 +126,16 @@ const TableRow = ({ rowIndex, onDataChange, onRowSubmit, maxScore = 0 }) => {
         ) : (
           <span className="no-score">0</span>
         )}
+      </td>
+      <td className="submissions-cell">
+        <div className="submissions-info">
+          <span className={submissionsRemaining === 0 ? 'limit-reached' : ''}>
+            {maxSubmissions - submissionsRemaining}/{maxSubmissions}
+          </span>
+          {submissionsRemaining === 0 && (
+            <span className="limit-badge">Limit reached</span>
+          )}
+        </div>
       </td>
     </tr>
   );

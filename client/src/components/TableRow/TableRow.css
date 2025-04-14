@@ -1,82 +1,113 @@
-.file-input-container {
-    position: relative;
-    width: 80%;
-  }
-  
-  .file-input {
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 1;
-  }
-  
-  .file-label {
-    display: block;
-    width: 100%;
-    padding: 8px 10px;
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+/* Add these styles to your TableRow.css file */
+
+.submissions-cell {
+  text-align: center;
+  vertical-align: middle;
+  width: 120px;
+}
+
+.submissions-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.limit-reached {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.limit-badge {
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.row-limit-reached {
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.file-label.disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.submission-limits-info {
+  margin: 10px 0 20px;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 4px solid #0d6efd;
+}
+
+.info-text {
+  margin: 0;
+  color: #495057;
+}
+
+.info-text i {
+  color: #0d6efd;
+  margin-right: 5px;
+}
+
+/* Add these styles to your TableRow.css file */
+
+.submissions-cell {
     text-align: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    min-height: 38px;
-    font-size: 0.875rem;
-    margin: 0;
-  }
-  
-  .file-label:hover {
-    background-color: #e9ecef;
-  }
-  
-  .serial-number {
-    text-align: center;
-    font-weight: 500;
     vertical-align: middle;
+    width: 120px;
   }
   
-  .file-cell {
-    min-width: 140px;
-    max-width: 200px;
-    padding: 5px 8px !important;
+  .submissions-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
   }
   
-  .submit-cell {
-    text-align: center;
-    width: 100px;
-    padding: 5px 8px !important;
+  .limit-reached {
+    color: #dc3545;
+    font-weight: bold;
   }
   
-  .row-submit-btn {
-    width: 100%;
-    font-size: 0.875rem;
-    padding: 4px 8px;
+  .limit-badge {
+    background-color: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
     white-space: nowrap;
   }
   
-  .ai-response-cell {
-    min-width: 150px;
-    padding: 5px 8px !important;
+  .row-limit-reached {
+    background-color: rgba(220, 53, 69, 0.05);
   }
   
-  .ai-response-text {
-    font-size: 0.875rem;
-    color: #212529;
-    max-height: 80px;
-    overflow-y: auto;
-    white-space: pre-line;
-    background-color: #f8f9fa;
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid #e9ecef;
-  }
-  
-  .no-response {
+  .file-label.disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
     color: #6c757d;
-    font-size: 0.875rem;
-    font-style: italic;
+  }
+  
+  .submission-limits-info {
+    margin: 10px 0 20px;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #0d6efd;
+  }
+  
+  .info-text {
+    margin: 0;
+    color: #495057;
+  }
+  
+  .info-text i {
+    color: #0d6efd;
+    margin-right: 5px;
   }
