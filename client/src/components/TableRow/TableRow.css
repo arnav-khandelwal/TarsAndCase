@@ -1,4 +1,136 @@
-/* Add these styles to your TableRow.css file */
+/* ========= GENERAL STYLING ========= */
+
+tr {
+  transition: background-color 0.25s ease;
+  font-size: 0.95rem;
+}
+
+/* Row highlight when limit is reached */
+.row-limit-reached {
+  background-color: rgba(255, 0, 0, 0.05); /* light red */
+}
+
+/* ========= SERIAL NUMBER ========= */
+
+.serial-number {
+  text-align: center;
+  font-weight: bold;
+  color: #495057;
+}
+
+/* ========= FILE INPUT ========= */
+
+.file-cell {
+  text-align: center;
+}
+
+.file-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background-color: #6799e4;
+  color: white;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.file-label:hover {
+  background-color: #4a6da2;
+  transform: translateY(-1px);
+}
+
+.file-label.disabled {
+  background-color: #ced4da;
+  color: #6c757d;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: 500;
+  word-break: break-word;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ========= SUBMIT BUTTON ========= */
+
+.submit-cell {
+  text-align: center;
+}
+
+.row-submit-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  color:whitesmoke;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  background-color: #416daa;
+}
+
+.row-submit-btn:hover:enabled {
+  transform: translateY(-1px);
+  background-color: #0056d2;
+}
+
+/* ========= AI RESPONSE ========= */
+
+.ai-response-cell {
+  text-align: center;
+}
+
+.ai-response-text {
+  font-weight: 500;
+  color: #2c7a7b;
+  background-color: #e6fffa;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.no-response {
+  font-style: italic;
+  color: #adb5bd;
+}
+
+/* ========= MAX SCORE ========= */
+
+.max-score-cell {
+  text-align: center;
+}
+
+.max-score-text {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.no-score {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* ========= SUBMISSIONS ========= */
 
 .submissions-cell {
   text-align: center;
@@ -21,93 +153,44 @@
 .limit-badge {
   background-color: #dc3545;
   color: white;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-  white-space: nowrap;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  animation: pulse 1s infinite alternate;
 }
 
-.row-limit-reached {
-  background-color: rgba(220, 53, 69, 0.05);
+/* Optional animation for badge */
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
 }
 
-.file-label.disabled {
-  background-color: #e9ecef;
-  cursor: not-allowed;
-  color: #6c757d;
-}
+/* ========= INFO BOX (OPTIONAL) ========= */
 
 .submission-limits-info {
   margin: 10px 0 20px;
-  padding: 10px 15px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-  border-left: 4px solid #0d6efd;
+  padding: 12px 18px;
+  background-color: #eef3fc;
+  border-left: 5px solid #0d6efd;
+  border-radius: 8px;
 }
 
 .info-text {
   margin: 0;
   color: #495057;
+  font-size: 0.95rem;
 }
 
 .info-text i {
   color: #0d6efd;
   margin-right: 5px;
 }
-
-/* Add these styles to your TableRow.css file */
-
-.submissions-cell {
-    text-align: center;
-    vertical-align: middle;
-    width: 120px;
-  }
-  
-  .submissions-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .limit-reached {
-    color: #dc3545;
-    font-weight: bold;
-  }
-  
-  .limit-badge {
-    background-color: #dc3545;
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 10px;
-    white-space: nowrap;
-  }
-  
-  .row-limit-reached {
-    background-color: rgba(220, 53, 69, 0.05);
-  }
-  
-  .file-label.disabled {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-    color: #6c757d;
-  }
-  
-  .submission-limits-info {
-    margin: 10px 0 20px;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    border-left: 4px solid #0d6efd;
-  }
-  
-  .info-text {
-    margin: 0;
-    color: #495057;
-  }
-  
-  .info-text i {
-    color: #0d6efd;
-    margin-right: 5px;
-  }

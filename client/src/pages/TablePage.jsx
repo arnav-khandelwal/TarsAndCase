@@ -146,8 +146,33 @@ const TablePage = () => {
   return (
     <div className="table-container">
       <div className="table-header">
-        <h1>Data Entry</h1>
-        <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
+        <h1 style ={{
+          fontSize: '2rem', // text-3xl
+          fontWeight: 'bold', 
+        }}>Data Entry</h1>
+        <button 
+  style={{
+    padding: '0.75rem 1.2rem', // px-6 py-3
+    color: 'white',
+    backgroundColor: '#e53e3e', // bg-red-600
+    border: '2px solid #e53e3e', // border-2 border-red-600
+    borderRadius: '0.375rem', // rounded-md
+    transition: 'all 0.3s ease', // transition-all duration-300
+  }}
+  onMouseEnter={(e) => {
+    e.target.style.backgroundColor = '#c53030'; // hover:bg-red-700
+    e.target.style.borderColor = '#c53030'; // hover:border-red-700
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.backgroundColor = '#e53e3e'; // bg-red-600
+    e.target.style.borderColor = '#e53e3e'; // border-red-600
+  }}
+  onClick={handleLogout}
+>
+  Logout
+</button>
+
+
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}

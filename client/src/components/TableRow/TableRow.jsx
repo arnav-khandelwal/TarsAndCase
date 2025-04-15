@@ -86,22 +86,24 @@ const TableRow = ({
     <tr className={isLimitReached ? 'row-limit-reached' : ''}>
       <td className="serial-number">{rowIndex + 1}</td>
       <td className="file-cell">
-        <div className="file-input-container">
-          <input
-            type="file"
-            id={`file-${rowIndex}`}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="file-input"
-            disabled={submitting || isLimitReached}
-          />
-          <label 
-            htmlFor={`file-${rowIndex}`} 
-            className={`file-label ${isLimitReached ? 'disabled' : ''}`}
-          >
-            {(isLimitReached ? 'Limit reached' : '')}
-          </label>
-        </div>
+      <div className="file-input-container">
+  <input
+    type="file"
+    id={`file-${rowIndex}`}
+    onChange={handleFileChange}
+    accept="image/*"
+    className="file-input"
+    disabled={submitting || isLimitReached}
+  />
+  <label
+    htmlFor={`file-${rowIndex}`}
+    className={`file-label ${isLimitReached ? 'disabled' : ''}`}
+  >
+    Choose Image
+  </label>
+  {fileName && <span className="file-name">{fileName}</span>}
+</div>
+
       </td>
       <td className="submit-cell">
         <button 

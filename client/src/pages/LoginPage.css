@@ -1,0 +1,117 @@
+/* LoginPage.css */
+body{
+    background: linear-gradient(to right, #74ebd5, #acb6e5);
+}
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+  }
+  
+  .login-form-container {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .login-form-container h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 2rem;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #34495e;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  }
+  
+  .btn {
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #3498db;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn:disabled {
+    background-color: #7fb3d5;
+    cursor: not-allowed;
+  }
+  
+  .btn:hover:not(:disabled) {
+    background-color: #2980b9;
+  }
+  
+  .alert {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  
+  .alert-danger {
+    background-color: #ffe6e6;
+    color: #c0392b;
+    border: 1px solid #e74c3c;
+  }
+  
+  .form-footer {
+    margin-top: 20px;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+  }
+  
+  .form-footer a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .form-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 480px) {
+    .login-form-container {
+      padding: 30px 20px;
+    }
+  }
+  
