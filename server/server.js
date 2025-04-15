@@ -6,6 +6,7 @@ const config = require('./config/config');
 const authRoutes = require('./routes/auth');
 const tableRoutes = require('./routes/table');
 const aiRoutes = require('./routes/ai');
+const leaderboardRoutes = require('./routes/leaderboard');
 const fs = require('fs');
 // Initialize express app
 const app = express();
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/table', tableRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // Serve static assets if in production
 if (config.nodeEnv === 'production') {

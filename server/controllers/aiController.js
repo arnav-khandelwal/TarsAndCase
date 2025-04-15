@@ -24,11 +24,42 @@ const compareImages = async (req, res) => {
     const referenceImageBase64 = referenceImage.toString('base64');
     const uploadedImageBase64 = uploadedImage.toString('base64');
 
+    // Improved prompt for more consistent scoring
     const prompt = `
-      Compare these two images and provide a similarity score out of 10. 
-      Consider factors like composition, subject matter, colors, and overall visual similarity.
-      The score should be a single number between 0 and 10, where 0 is completely different 
-      and 10 is identical. Only respond with the number, no additional text or explanation.
+      You are an expert image comparison system designed to provide consistent similarity scores.
+      
+      Your task is to compare two images and assign a similarity score from 0 to 10, where:
+      - 10: Identical or nearly identical images (>95% similarity)
+      - 8-9: Very high similarity with only minor differences
+      - 6-7: Strong similarity with noticeable differences
+      - 4-5: Moderate similarity with significant differences
+      - 2-3: Low similarity with major differences
+      - 0-1: Very different images with little to no similarity
+      
+      Follow this structured assessment approach:
+      1. Analyze structural similarity (50% of score):
+         - Object/subject positioning and alignment
+         - Proportions and scale
+         - Shape contours and boundaries
+         - Spatial arrangement of elements
+      
+      2. Analyze color similarity (25% of score):
+         - Overall color palette
+         - Color distribution
+         - Brightness, contrast, and saturation
+         - Color gradients and transitions
+      
+      3. Analyze detail similarity (25% of score):
+         - Texture patterns
+         - Fine details and small elements
+         - Sharpness and clarity
+         - Edge definition
+      
+      If the images are exactly the same or appear to be the same image, score 10.
+      If the images are completely different with no shared elements, score 0.
+      
+      Return ONLY a decimal number between 0 and 10, with one decimal place precision (e.g., 7.8).
+      Do not include any text, explanation, or analysis in your response.
     `;
 
     const result = await model.generateContent([
