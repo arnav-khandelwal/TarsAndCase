@@ -19,7 +19,10 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route 
+            path="/leaderboard" 
+            element={<PrivateRoute element={<LeaderboardPage />} />} 
+          />
           <Route 
             path="/table" 
             element={<PrivateRoute element={<TablePage />} />} 
@@ -29,8 +32,6 @@ function App() {
             element={<PrivateRoute element={<AdminPage />} />} 
           />
           <Route path="*" element={<Navigate to="/login" />} />
-          <Route path="*" element={<Navigate to="/leaderboard" />} />
-
         </Routes>
       </div>
     </Router>

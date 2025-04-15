@@ -163,3 +163,27 @@
     white-space: nowrap;
   }
 }
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e2e6ea;
+    padding-bottom: 1rem;
+  }
+  
+  .admin-header h1 {
+    font-size: 2rem;
+    color: #343a40;
+  }
+  
+  .admin-nav-buttons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .btn-outline-danger {
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+  }

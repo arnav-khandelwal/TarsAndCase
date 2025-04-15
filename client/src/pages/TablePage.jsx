@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import DataTable from '../components/DataTable/DataTable';
 
@@ -49,16 +49,26 @@ const TablePage = () => {
       const res = await axios.get('/api/table/user', config);
       
       // Handle the updated response format
-      if (res.data.entries) {
-        setEntries(res.data.entries);
-        calculateMaxScores(res.data.entries);
+      let entriesData = [];
+      
+      if (res.data && res.data.entries) {
+        // New format: { entries: [...], submissionLimits: {...} }
+        entriesData = res.data.entries || [];
+        setEntries(entriesData);
         setSubmissionLimits(res.data.submissionLimits || {});
         setMaxSubmissionsPerRow(res.data.maxSubmissionsPerRow || 5);
+      } else if (Array.isArray(res.data)) {
+        // Old format: direct array of entries
+        entriesData = res.data;
+        setEntries(entriesData);
       } else {
-        // Handle backward compatibility
-        setEntries(res.data);
-        calculateMaxScores(res.data);
+        // Unexpected format
+        console.error('Unexpected data format:', res.data);
+        entriesData = [];
+        setEntries([]);
       }
+      
+      calculateMaxScores(entriesData);
     } catch (err) {
       console.error(err);
       setError('Failed to load entries');
@@ -72,14 +82,21 @@ const TablePage = () => {
   
   // Calculate max scores for each row based on entries
   const calculateMaxScores = (entriesData) => {
+    if (!Array.isArray(entriesData)) {
+      console.error('entriesData is not an array:', entriesData);
+      return;
+    }
+    
     const newMaxScores = Array(11).fill(0);
     
     entriesData.forEach(entry => {
-      const rowIndex = entry.serialNumber - 1; // Convert to 0-based index
-      const score = parseFloat(entry.aiResponse) || 0;
-      
-      if (rowIndex >= 0 && rowIndex < 11 && score > newMaxScores[rowIndex]) {
-        newMaxScores[rowIndex] = score;
+      if (entry && entry.serialNumber !== undefined) {
+        const rowIndex = entry.serialNumber - 1; // Convert to 0-based index
+        const score = parseFloat(entry.aiResponse) || 0;
+        
+        if (rowIndex >= 0 && rowIndex < 11 && score > newMaxScores[rowIndex]) {
+          newMaxScores[rowIndex] = score;
+        }
       }
     });
     
@@ -146,33 +163,58 @@ const TablePage = () => {
   return (
     <div className="table-container">
       <div className="table-header">
-        <h1 style ={{
-          fontSize: '2rem', // text-3xl
+        <h1 style={{
+          fontSize: '2rem',
           fontWeight: 'bold', 
         }}>Data Entry</h1>
-        <button 
-  style={{
-    padding: '0.75rem 1.2rem', // px-6 py-3
-    color: 'white',
-    backgroundColor: '#e53e3e', // bg-red-600
-    border: '2px solid #e53e3e', // border-2 border-red-600
-    borderRadius: '0.375rem', // rounded-md
-    transition: 'all 0.3s ease', // transition-all duration-300
-  }}
-  onMouseEnter={(e) => {
-    e.target.style.backgroundColor = '#c53030'; // hover:bg-red-700
-    e.target.style.borderColor = '#c53030'; // hover:border-red-700
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.backgroundColor = '#e53e3e'; // bg-red-600
-    e.target.style.borderColor = '#e53e3e'; // border-red-600
-  }}
-  onClick={handleLogout}
->
-  Logout
-</button>
-
-
+        <div className="header-buttons">
+          <Link 
+            to="/leaderboard" 
+            style={{
+              padding: '0.75rem 1.2rem',
+              color: '#3498db',
+              backgroundColor: 'transparent',
+              border: '2px solid #3498db',
+              borderRadius: '0.375rem',
+              transition: 'all 0.3s ease',
+              marginRight: '12px',
+              textDecoration: 'none',
+              display: 'inline-block',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#3498db';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = '#3498db';
+            }}
+          >
+            View Leaderboard
+          </Link>
+          <button 
+            style={{
+              padding: '0.75rem 1.2rem',
+              color: 'white',
+              backgroundColor: '#e53e3e',
+              border: '2px solid #e53e3e',
+              borderRadius: '0.375rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#c53030';
+              e.target.style.borderColor = '#c53030';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#e53e3e';
+              e.target.style.borderColor = '#e53e3e';
+            }}
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LeaderboardPage.css';
 
 const LeaderboardPage = () => {
@@ -9,6 +9,31 @@ const LeaderboardPage = () => {
   const [error, setError] = useState('');
   const [refreshInterval, setRefreshInterval] = useState(30); // 30 seconds refresh interval
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Check user authentication and role
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      // Try to decode the token to get user info
+      try {
+        // JWT tokens are in format: header.payload.signature
+        // We need the payload which is the second part
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          // Check if user is admin
+          setIsAdmin(payload.user && payload.user.isAdmin === true);
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+      }
+    }
+  }, [navigate]);
 
   // Load leaderboard data initially
   useEffect(() => {
@@ -30,7 +55,14 @@ const LeaderboardPage = () => {
   const loadLeaderboardData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/leaderboard');
+      
+      const config = {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      };
+      
+      const res = await axios.get('/api/leaderboard', config);
       setLeaderboardData(res.data);
       setError('');
     } catch (err) {
@@ -52,14 +84,49 @@ const LeaderboardPage = () => {
     loadLeaderboardData();
     setLastUpdated(new Date());
   };
+  
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   return (
     <div className="leaderboard-container">
       <div className="leaderboard-header">
         <h1>Image Similarity Game Leaderboard</h1>
         <div className="navigation-links">
-          <Link to="/login" className="nav-link">Login</Link>
-          <Link to="/signup" className="nav-link">Sign Up</Link>
+          {isAdmin ? (
+            <Link to="/admin" className="nav-link">Admin Dashboard</Link>
+          ) : (
+            <Link to="/table" className="nav-link">Game Dashboard</Link>
+          )}
+          <button 
+            className="nav-link logout-button" 
+            onClick={handleLogout}
+            style={{
+              cursor: 'pointer',
+              background: 'none',
+              border: '1px solid #e74c3c',
+              borderRadius: '4px',
+              color: '#e74c3c',
+              fontWeight: '600',
+              padding: '8px 15px',
+              transition: 'all 0.2s',
+              fontFamily: 'inherit',
+              fontSize: '1rem'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#e74c3c';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = '#e74c3c';
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
@@ -96,7 +163,7 @@ const LeaderboardPage = () => {
         <h2>Top Performers</h2>
         {loading && <div className="loading-spinner">Loading...</div>}
         
-        {!loading && leaderboardData.length === 0 ? (
+        {!loading && (!leaderboardData.overall || leaderboardData.overall.length === 0) ? (
           <div className="no-data">No leaderboard data available yet.</div>
         ) : (
           <div className="leaderboard-tables">
@@ -164,14 +231,6 @@ const LeaderboardPage = () => {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="leaderboard-footer">
-        <p>Challenge yourself! Upload images that closely match our reference to climb the leaderboard.</p>
-        <p>
-          <Link to="/login" className="btn btn-success">Login to Play</Link>
-          <Link to="/signup" className="btn btn-outline-primary ml-2">Create an Account</Link>
-        </p>
       </div>
     </div>
   );

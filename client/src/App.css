@@ -278,4 +278,23 @@ body {
     text-decoration: underline;
   }
   
-  /* Add these styles to your existing App.css file */
+   /* Table Page Styles */
+   .table-header,
+   .admin-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 24px;
+   }
+   
+   .header-buttons,
+   .admin-nav-buttons {
+     display: flex;
+     align-items: center;
+     gap: 12px;
+   }
+   
+   .table-container h2,
+   .admin-container h2 {
+     margin-bottom: 16px;
+   }

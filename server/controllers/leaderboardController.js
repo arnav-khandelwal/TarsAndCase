@@ -5,9 +5,8 @@ const User = require('../models/User');
 exports.getLeaderboard = async (req, res) => {
   try {
     // Fetch all entries with user information
-    const entries = await TableEntry.find()
-      .populate('user', 'username')
-      .sort({ aiResponse: -1 });
+    // No need to sort here as we'll be calculating totals and sorting later
+    const entries = await TableEntry.find().populate('user', 'username');
 
     if (!entries || entries.length === 0) {
       return res.json({
@@ -24,21 +23,27 @@ exports.getLeaderboard = async (req, res) => {
       
       const userId = entry.user._id.toString();
       const username = entry.user.username;
-      const score = parseFloat(entry.aiResponse) || 0;
+      const aiScore = parseFloat(entry.aiResponse) || 0;
+      const adminScore = parseFloat(entry.adminScore) || 0;
+      const totalScore = aiScore + adminScore; // Calculate total score for each entry
       
       if (!userStats[userId]) {
         userStats[userId] = {
           userId,
           username,
-          scores: [score],
-          totalScore: score,
-          maxScore: score,
+          scores: [totalScore], // Store total scores
+          aiScores: [aiScore],  // Store AI scores separately
+          adminScores: [adminScore], // Store admin scores separately
+          totalScore: totalScore,
+          maxScore: totalScore,
           submissionCount: 1
         };
       } else {
-        userStats[userId].scores.push(score);
-        userStats[userId].totalScore += score;
-        userStats[userId].maxScore = Math.max(userStats[userId].maxScore, score);
+        userStats[userId].scores.push(totalScore);
+        userStats[userId].aiScores.push(aiScore);
+        userStats[userId].adminScores.push(adminScore);
+        userStats[userId].totalScore += totalScore; // Sum of all total scores
+        userStats[userId].maxScore = Math.max(userStats[userId].maxScore, totalScore);
         userStats[userId].submissionCount += 1;
       }
     });
@@ -47,13 +52,13 @@ exports.getLeaderboard = async (req, res) => {
     const overallLeaderboard = Object.values(userStats).map(user => ({
       userId: user.userId,
       username: user.username,
-      totalScore: user.totalScore,
+      totalScore: user.totalScore, // This is now the sum of all (AI + admin) scores
       maxScore: user.maxScore,
       submissionCount: user.submissionCount,
       averageScore: user.totalScore / user.submissionCount
     }));
 
-    // Sort by total score
+    // Sort by total score (descending)
     overallLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
 
     // Calculate row-specific leaderboards
@@ -65,7 +70,9 @@ exports.getLeaderboard = async (req, res) => {
       const rowNum = entry.serialNumber;
       const userId = entry.user._id.toString();
       const username = entry.user.username;
-      const score = parseFloat(entry.aiResponse) || 0;
+      const aiScore = parseFloat(entry.aiResponse) || 0;
+      const adminScore = parseFloat(entry.adminScore) || 0;
+      const totalScore = aiScore + adminScore; // Use total score for row rankings too
       
       if (!rowLeaderboards[rowNum]) {
         rowLeaderboards[rowNum] = {};
@@ -75,10 +82,15 @@ exports.getLeaderboard = async (req, res) => {
         rowLeaderboards[rowNum][userId] = {
           userId,
           username,
-          maxScore: score
+          maxScore: totalScore, // Track max total score per row
+          aiScore: aiScore,     // Keep AI score for reference
+          adminScore: adminScore // Keep admin score for reference
         };
-      } else if (score > rowLeaderboards[rowNum][userId].maxScore) {
-        rowLeaderboards[rowNum][userId].maxScore = score;
+      } else if (totalScore > rowLeaderboards[rowNum][userId].maxScore) {
+        // Update if this entry has a higher total score
+        rowLeaderboards[rowNum][userId].maxScore = totalScore;
+        rowLeaderboards[rowNum][userId].aiScore = aiScore;
+        rowLeaderboards[rowNum][userId].adminScore = adminScore;
       }
     });
 
@@ -87,7 +99,7 @@ exports.getLeaderboard = async (req, res) => {
     
     Object.keys(rowLeaderboards).forEach(rowNum => {
       formattedRowLeaderboards[rowNum] = Object.values(rowLeaderboards[rowNum])
-        .sort((a, b) => b.maxScore - a.maxScore);
+        .sort((a, b) => b.maxScore - a.maxScore); // Sort by total score
     });
 
     res.json({
@@ -105,7 +117,7 @@ exports.getUserRanking = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Get user's total score
+    // Get user's entries
     const userEntries = await TableEntry.find({ user: userId });
     
     if (!userEntries || userEntries.length === 0) {
@@ -121,12 +133,15 @@ exports.getUserRanking = async (req, res) => {
     const rowScores = {};
     
     userEntries.forEach(entry => {
-      const score = parseFloat(entry.aiResponse) || 0;
-      totalScore += score;
+      const aiScore = parseFloat(entry.aiResponse) || 0;
+      const adminScore = parseFloat(entry.adminScore) || 0;
+      const entryTotalScore = aiScore + adminScore;
+      
+      totalScore += entryTotalScore;
       
       const rowNum = entry.serialNumber;
-      if (!rowScores[rowNum] || score > rowScores[rowNum]) {
-        rowScores[rowNum] = score;
+      if (!rowScores[rowNum] || entryTotalScore > rowScores[rowNum]) {
+        rowScores[rowNum] = entryTotalScore;
       }
     });
     
@@ -142,10 +157,23 @@ exports.getUserRanking = async (req, res) => {
       },
       { $unwind: '$userInfo' },
       {
+        $addFields: {
+          // Convert string scores to numbers and handle nulls
+          numericAiResponse: { $convert: { input: '$aiResponse', to: 'double', onError: 0, onNull: 0 } },
+          numericAdminScore: { $ifNull: [{ $convert: { input: '$adminScore', to: 'double', onError: 0, onNull: 0 } }, 0] },
+        }
+      },
+      {
+        $addFields: {
+          // Calculate total score for each entry
+          totalEntryScore: { $add: ['$numericAiResponse', '$numericAdminScore'] }
+        }
+      },
+      {
         $group: {
           _id: '$userInfo._id',
           username: { $first: '$userInfo.username' },
-          totalScore: { $sum: { $toDouble: '$aiResponse' } }
+          totalScore: { $sum: '$totalEntryScore' } // Sum of all total scores
         }
       },
       { $sort: { totalScore: -1 } }
@@ -176,10 +204,23 @@ exports.getUserRanking = async (req, res) => {
         },
         { $unwind: '$userInfo' },
         {
+          $addFields: {
+            // Convert string scores to numbers and handle nulls
+            numericAiResponse: { $convert: { input: '$aiResponse', to: 'double', onError: 0, onNull: 0 } },
+            numericAdminScore: { $ifNull: [{ $convert: { input: '$adminScore', to: 'double', onError: 0, onNull: 0 } }, 0] },
+          }
+        },
+        {
+          $addFields: {
+            // Calculate total score for each entry
+            totalEntryScore: { $add: ['$numericAiResponse', '$numericAdminScore'] }
+          }
+        },
+        {
           $group: {
             _id: '$userInfo._id',
             username: { $first: '$userInfo.username' },
-            maxScore: { $max: { $toDouble: '$aiResponse' } }
+            maxScore: { $max: '$totalEntryScore' } // Get max total score per row
           }
         },
         { $sort: { maxScore: -1 } }
@@ -207,3 +248,33 @@ exports.getUserRanking = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+exports.getUserEntries = async (req, res) => {
+    try {
+      const entries = await TableEntry.find({ user: req.user.id }).sort({ serialNumber: -1 });
+      
+      // Get submission counts for each row
+      const submissionCounts = {};
+      const MAX_SUBMISSIONS_PER_ROW = 5; // Define this at the top of your file
+  
+      for (let i = 1; i <= 11; i++) {
+        const count = await TableEntry.countDocuments({ 
+          user: req.user.id, 
+          serialNumber: i 
+        });
+        submissionCounts[i] = {
+          count,
+          remaining: MAX_SUBMISSIONS_PER_ROW - count
+        };
+      }
+      
+      // Return formatted response with entries and submission limits info
+      res.json({
+        entries: entries, // Make sure entries is an array
+        submissionLimits: submissionCounts,
+        maxSubmissionsPerRow: MAX_SUBMISSIONS_PER_ROW
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './AdminPage.css'; // Assuming you have a CSS file for styling
+
 const AdminPage = () => {
   const [entries, setEntries] = useState([]);
   const [error, setError] = useState('');
@@ -150,28 +150,7 @@ const AdminPage = () => {
     <div className="admin-container">
       <div className="admin-header">
         <h1>Admin Dashboard</h1>
-        <button 
-  style={{
-    padding: '0.75rem 1.2rem', // px-6 py-3
-    color: 'white',
-    backgroundColor: '#e53e3e', // bg-red-600
-    border: '2px solid #e53e3e', // border-2 border-red-600
-    borderRadius: '0.375rem', // rounded-md
-    transition: 'all 0.3s ease', // transition-all duration-300
-  }}
-  onMouseEnter={(e) => {
-    e.target.style.backgroundColor = '#c53030'; // hover:bg-red-700
-    e.target.style.borderColor = '#c53030'; // hover:border-red-700
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.backgroundColor = '#e53e3e'; // bg-red-600
-    e.target.style.borderColor = '#e53e3e'; // border-red-600
-  }}
-  onClick={handleLogout}
->
-  Logout
-</button>
-
+        <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}
