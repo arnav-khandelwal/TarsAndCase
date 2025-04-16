@@ -101,7 +101,7 @@ tr {
 
 .ai-response-text {
   font-weight: 500;
-  color: #2c7a7b;
+  color: #011617;
   background-color: #e6fffa;
   padding: 6px 10px;
   border-radius: 6px;
@@ -126,7 +126,7 @@ tr {
 }
 
 .no-score {
-  color: #adb5bd;
+  color: #000306;
   font-style: italic;
 }
 

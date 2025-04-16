@@ -150,7 +150,24 @@ const AdminPage = () => {
     <div className="admin-container">
       <div className="admin-header">
         <h1>Admin Dashboard</h1>
-        <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
+        <button style={{
+            padding: '0.7rem 1rem',
+            color: 'white',
+            backgroundColor: '#e53e3e',
+            border: '2px solid #e53e3e',
+            borderRadius: '0.375rem',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#c53030';
+            e.target.style.borderColor = '#c53030';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#e53e3e';
+            e.target.style.borderColor = '#e53e3e';
+          }}
+           onClick={handleLogout}>Logout</button>
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}
@@ -193,6 +210,21 @@ const AdminPage = () => {
                   <td>
                     <div className="score-input-container">
                       <input 
+                      style={{
+                        padding: '0.6rem 0.8rem',
+                        color: 'white',
+                        backgroundColor: 'rgb(135, 173, 92)',
+                        border: '2px solidrgb(147, 155, 77)',
+                        borderRadius: '0.37rem',
+                        margin: '0.05rem 0.5rem',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'rgb(136, 233, 77)';
+                       }}
+                       onMouseLeave={(e) => {
+                        e.target.style.backgroundColor ='rgb(92, 180, 67)';
+                      }}
                         type="number" 
                         min="0" 
                         max="10" 
@@ -202,7 +234,22 @@ const AdminPage = () => {
                         onChange={(e) => handleScoreChange(entry._id, e.target.value)}
                       />
                       <button 
-                        className="btn btn-sm btn-primary save-score-btn"
+                        style={{
+                          padding: '0.7rem 1rem',
+                          justifyContent: 'center',
+                          color: 'white',
+                          backgroundColor: 'rgb(24, 150, 228)',
+                          border: '1px solidrgb(62, 165, 229)',
+                          borderRadius: '0.375rem',
+                         margin: '0.3rem 1.6rem',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = 'rgb(20, 111, 168)';
+                         }}
+                         onMouseLeave={(e) => {
+                          e.target.style.backgroundColor ='rgb(24, 150, 228)';
+                        }}
                         onClick={() => handleScoreSubmit(entry._id)}
                       >
                         Save
@@ -215,7 +262,23 @@ const AdminPage = () => {
                   <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
                   <td>
                     <button 
-                      className="btn btn-danger btn-sm"
+                      style={{
+                        padding: '0.5rem 0.5rem',
+                        color: 'white',
+                        backgroundColor: '#e53e3e',
+                        border: '2px solidrgb(201, 72, 72)',
+                        borderRadius: '0.375rem',
+                        cursor: 'pointer',
+                        margin: '0.2rem 1.4rem',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#c53030';
+                        
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#e53e3e';
+                       
+                      }} 
                       onClick={() => handleDelete(entry._id)}
                     >
                       Delete

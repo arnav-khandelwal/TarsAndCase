@@ -151,7 +151,24 @@ const LeaderboardPage = () => {
           </select>
         </div>
         <button 
-          className="btn btn-primary btn-refresh" 
+          
+          style={{
+            padding: '0.75rem 1.2rem',
+            color: 'white',
+            backgroundColor: '#e53e3e',
+            border: '2px solid #e53e3e',
+            borderRadius: '0.375rem',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#c53030';
+            e.target.style.borderColor = '#c53030';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#e53e3e';
+            e.target.style.borderColor = '#e53e3e';
+          }}
           onClick={handleManualRefresh}
           disabled={loading}
         >
