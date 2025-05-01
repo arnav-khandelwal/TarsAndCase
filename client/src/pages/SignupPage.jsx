@@ -49,8 +49,8 @@ const SignupPage = () => {
       // Save token to localStorage
       localStorage.setItem('token', res.data.token);
       
-      // Redirect to table page
-      navigate('/table');
+      // Redirect to landing page
+      navigate('/landing'); // Changed from '/table' to '/landing'
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
       setLoading(false);

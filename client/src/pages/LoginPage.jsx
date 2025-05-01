@@ -34,7 +34,7 @@ const LoginPage = () => {
       if (res.data.isAdmin) {
         navigate('/admin');
       } else {
-        navigate('/table');
+        navigate('/landing'); // Changed from '/table' to '/landing'
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

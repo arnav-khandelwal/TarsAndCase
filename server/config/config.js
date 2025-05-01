@@ -1,6 +1,5 @@
-const dotenv = require('dotenv');
 const path = require('path');
-
+const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
@@ -18,8 +17,8 @@ module.exports = {
 
   
   // Gemini AI API configuration
-  geminiApiKey: process.env.GEMINI_API_KEY || 'AIzaSyDOi60hbjvzD1NHi-xULzUCMj0HdITftnM',
-  REFERENCE_IMAGE_PATH: process.env.REFERENCE_IMAGE_PATH || './uploads/reference.jpg',
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  REFERENCE_IMAGE_PATH: './uploads/reference2.jpeg',
   
   // File upload configuration
   uploadDir: path.join(__dirname, '../uploads'), // Absolute path

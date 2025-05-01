@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const AdminPage = () => {
   const [entries, setEntries] = useState([]);
@@ -8,6 +8,9 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [scores, setScores] = useState({});
   const [feedback, setFeedback] = useState('');
+  const [round1Locked, setRound1Locked] = useState(false);
+  const [round2Locked, setRound2Locked] = useState(false);
+  const [gameStatus, setGameStatus] = useState({});
   
   const navigate = useNavigate();
   
@@ -18,6 +21,7 @@ const AdminPage = () => {
       navigate('/login');
     } else {
       loadAllEntries();
+      loadGameStatus();
     }
   }, [navigate]);
   
@@ -52,6 +56,69 @@ const AdminPage = () => {
       }
     }
     setLoading(false);
+  };
+  
+  // Load game status
+  const loadGameStatus = async () => {
+    try {
+      const config = {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      };
+      
+      const res = await axios.get('/api/game/status', config);
+      setRound1Locked(res.data.round1Locked);
+      setRound2Locked(res.data.round2Locked);
+      setGameStatus(res.data);
+    } catch (err) {
+      console.error('Error loading game status:', err);
+      // For now, set default values if API is not yet implemented
+      setRound1Locked(false);
+      setRound2Locked(false);
+    }
+  };
+  
+  // Handle toggling round lock status
+  const toggleRoundLock = async (round) => {
+    try {
+      const config = {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const updatedStatus = {
+        ...gameStatus,
+        [round === 1 ? 'round1Locked' : 'round2Locked']: 
+          round === 1 ? !round1Locked : !round2Locked
+      };
+      
+      await axios.put('/api/game/status', updatedStatus, config);
+      
+      // Update local state
+      if (round === 1) {
+        setRound1Locked(!round1Locked);
+      } else {
+        setRound2Locked(!round2Locked);
+      }
+      
+      setFeedback(`Round ${round} has been ${round === 1 ? !round1Locked : !round2Locked ? 'locked' : 'unlocked'} successfully`);
+      
+      // Clear feedback after 3 seconds
+      setTimeout(() => {
+        setFeedback('');
+      }, 3000);
+    } catch (err) {
+      console.error(`Error toggling round ${round} lock:`, err);
+      setError(`Failed to update Round ${round} status`);
+      
+      // Clear error after 3 seconds
+      setTimeout(() => {
+        setError('');
+      }, 3000);
+    }
   };
   
   // Handle logout
@@ -150,28 +217,177 @@ const AdminPage = () => {
     <div className="admin-container">
       <div className="admin-header">
         <h1>Admin Dashboard</h1>
-        <button style={{
-            padding: '0.7rem 1rem',
-            color: 'white',
-            backgroundColor: '#e53e3e',
-            border: '2px solid #e53e3e',
-            borderRadius: '0.375rem',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#c53030';
-            e.target.style.borderColor = '#c53030';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = '#e53e3e';
-            e.target.style.borderColor = '#e53e3e';
-          }}
-           onClick={handleLogout}>Logout</button>
+        <div className="admin-nav-buttons">
+          <Link 
+            to="/landing" 
+            style={{
+              padding: '0.75rem 1.2rem',
+              color: '#3498db',
+              backgroundColor: 'transparent',
+              border: '2px solid #3498db',
+              borderRadius: '0.375rem',
+              transition: 'all 0.3s ease',
+              marginRight: '12px',
+              textDecoration: 'none',
+              display: 'inline-block',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#3498db';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = '#3498db';
+            }}
+          >
+            Game Dashboard
+          </Link>
+          <button style={{
+              padding: '0.7rem 1rem',
+              color: 'white',
+              backgroundColor: '#e53e3e',
+              border: '2px solid #e53e3e',
+              borderRadius: '0.375rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#c53030';
+              e.target.style.borderColor = '#c53030';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#e53e3e';
+              e.target.style.borderColor = '#e53e3e';
+            }}
+            onClick={handleLogout}>Logout</button>
+        </div>
       </div>
       
       {error && <div className="alert alert-danger">{error}</div>}
       {feedback && <div className="alert alert-success">{feedback}</div>}
+      
+      {/* Game Control Panel */}
+      <div className="game-control-panel" style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        marginBottom: '30px'
+      }}>
+        <h2 style={{ marginBottom: '20px', color: '#2c3e50' }}>Game Controls</h2>
+        
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap',
+          gap: '20px',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ 
+            flex: '1',
+            minWidth: '250px',
+            borderRadius: '8px',
+            padding: '15px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+            backgroundColor: '#f8f9fa'
+          }}>
+            <h3 style={{ 
+              fontSize: '1.2rem', 
+              marginBottom: '15px',
+              color: '#e74c3c'
+            }}>Round 1: Pointless Quiz</h3>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ 
+                  display: 'inline-block',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  backgroundColor: round1Locked ? '#e74c3c' : '#27ae60'
+                }}>
+                  {round1Locked ? 'LOCKED' : 'UNLOCKED'}
+                </span>
+              </div>
+              
+              <button 
+                onClick={() => toggleRoundLock(1)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: round1Locked ? '#27ae60' : '#e74c3c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = round1Locked ? '#219653' : '#c0392b';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = round1Locked ? '#27ae60' : '#e74c3c';
+                }}
+              >
+                {round1Locked ? 'Unlock Round 1' : 'Lock Round 1'}
+              </button>
+            </div>
+          </div>
+          
+          <div style={{ 
+            flex: '1',
+            minWidth: '250px',
+            borderRadius: '8px',
+            padding: '15px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+            backgroundColor: '#f8f9fa'
+          }}>
+            <h3 style={{ 
+              fontSize: '1.2rem', 
+              marginBottom: '15px',
+              color: '#3498db'
+            }}>Round 2: Image Similarity</h3>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ 
+                  display: 'inline-block',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  backgroundColor: round2Locked ? '#e74c3c' : '#27ae60'
+                }}>
+                  {round2Locked ? 'LOCKED' : 'UNLOCKED'}
+                </span>
+              </div>
+              
+              <button 
+                onClick={() => toggleRoundLock(2)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: round2Locked ? '#27ae60' : '#e74c3c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = round2Locked ? '#219653' : '#c0392b';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = round2Locked ? '#27ae60' : '#e74c3c';
+                }}
+              >
+                {round2Locked ? 'Unlock Round 2' : 'Lock Round 2'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* All Entries */}
       <div className="all-entries">

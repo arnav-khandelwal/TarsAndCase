@@ -1,0 +1,220 @@
+.landing-container {
+    min-height: 100vh;
+    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .landing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .landing-title {
+    font-size: 2.5rem;
+    color: #fff;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .landing-nav {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .leaderboard-button, .logout-button {
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .leaderboard-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .logout-button {
+    background: rgba(231, 76, 60, 0.8);
+    border-color: rgba(231, 76, 60, 0.8);
+  }
+  
+  .logout-button:hover {
+    background: rgb(231, 76, 60);
+    border-color: rgb(231, 76, 60);
+  }
+  
+  .rounds-container {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+    justify-content: center;
+    max-width: 1200px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .round-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .round-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+  
+  .round-header {
+    background: #3498db;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .round-1-header {
+    background: #e74c3c;
+  }
+  
+  .round-2-header {
+    background: #3498db;
+  }
+  
+  .round-title {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+  }
+  
+  .round-subtitle {
+    font-size: 1.1rem;
+    margin: 5px 0 0;
+    opacity: 0.9;
+  }
+  
+  .round-content {
+    padding: 30px;
+    text-align: center;
+  }
+  
+  .round-description {
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+  
+  .start-button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .round-1-button {
+    background: #e74c3c;
+  }
+  
+  .round-1-button:hover {
+    background: #c0392b;
+  }
+  
+  .round-2-button {
+    background: #3498db;
+  }
+  
+  .round-2-button:hover {
+    background: #2980b9;
+  }
+  
+  .locked-button {
+    background: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .locked-button:hover {
+    background: #95a5a6;
+  }
+  
+  .lock-icon {
+    margin-right: 8px;
+  }
+  
+  .welcome-message {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .welcome-title {
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 15px;
+  }
+  
+  .welcome-text {
+    color: #555;
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .rounds-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .landing-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    
+    .landing-title {
+      font-size: 2rem;
+    }
+    
+    .round-card {
+      max-width: 100%;
+    }
+    
+    .welcome-title {
+      font-size: 1.7rem;
+    }
+  }

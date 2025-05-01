@@ -37,52 +37,69 @@ exports.createEntry = async (req, res) => {
         });
       }
 
+      // Check if the reference image exists
+      const referenceImagePath = config.REFERENCE_IMAGE_PATH;
+      if (!fs.existsSync(referenceImagePath)) {
+        // Remove the uploaded file to avoid cluttering storage
+        if (req.file && req.file.path) {
+          fs.unlinkSync(req.file.path);
+        }
+        return res.status(500).json({ 
+          message: 'Reference image not found. Please contact the administrator.'
+        });
+      }
+
       // Process with Gemini AI
       const model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash",
       });
   
-      const referenceImage = fs.readFileSync(config.REFERENCE_IMAGE_PATH);
+      const referenceImage = fs.readFileSync(referenceImagePath);
       const uploadedImage = fs.readFileSync(req.file.path);
   
       const referenceImageBase64 = referenceImage.toString('base64');
       const uploadedImageBase64 = uploadedImage.toString('base64');
   
       const prompt = `
-      You are an expert image comparison system designed to provide consistent similarity scores.
-      
-      Your task is to compare two images and assign a similarity score from 0 to 10, where:
-      - 10: Identical or nearly identical images (>95% similarity)
-      - 8-9: Very high similarity with only minor differences
-      - 6-7: Strong similarity with noticeable differences
-      - 4-5: Moderate similarity with significant differences
-      - 2-3: Low similarity with major differences
-      - 0-1: Very different images with little to no similarity
-      
-      Follow this structured assessment approach:
-      1. Analyze structural similarity (50% of score):
-         - Object/subject positioning and alignment
-         - Proportions and scale
-         - Shape contours and boundaries
-         - Spatial arrangement of elements
-      
-      2. Analyze color similarity (25% of score):
-         - Overall color palette
-         - Color distribution
-         - Brightness, contrast, and saturation
-         - Color gradients and transitions
-      
-      3. Analyze detail similarity (25% of score):
-         - Texture patterns
-         - Fine details and small elements
-         - Sharpness and clarity
-         - Edge definition
-      
-      If the images are exactly the same or appear to be the same image, score 10.
-      If the images are completely different with no shared elements, score 0.
-      
-      Return ONLY a decimal number between 0 and 10, with one decimal place precision (e.g., 7.8).
-      Do not include any text, explanation, or analysis in your response.`;
+      You are a visual analysis system trained to compare two images with high precision and return a similarity score.
+
+TASK:
+Compare two input images — a REFERENCE image and a USER SUBMISSION — and output a single decimal number between 0.0 and 10.0 representing their visual similarity. The score must be calculated based on detailed visual, structural, and pixel-level similarities.
+
+SCORING CRITERIA:
+- 10.0: Images are visually and structurally identical or nearly identical (>95% similarity)
+- 7.0–9.9: Images are highly similar with only minor differences
+- 4.0–6.9: Images are moderately similar but have noticeable differences
+- 1.0–3.9: Images show low similarity with major visual/structural differences
+- 0.0: No significant similarity detected
+
+DIMENSIONS OF COMPARISON:
+1. VISUAL CONTENT (40%)
+   - Objects and subjects present
+   - Composition and layout
+   - Color palette and lighting
+
+2. STRUCTURAL ELEMENTS (30%)
+   - Shapes, geometry, and proportions
+   - Spatial arrangement and alignment
+
+3. DETAIL ALIGNMENT (30%)
+   - Texture, resolution, edge sharpness
+   - Fine details and clarity
+
+INSTRUCTIONS:
+- If the two images are **bitwise identical** or exact pixel copies, the score MUST be **10.0**.
+- If images are highly similar but compressed or resized versions, assign a score between **9.0 and 10.0**.
+- DO NOT penalize slight artifacts or compression noise unless they affect overall perception.
+- Be objective and consistent across comparisons.
+
+RESPONSE FORMAT:
+- Output only the similarity score (e.g., 8.3) with **no explanation, labels, or extra text**.
+- Always return a number with **exactly one decimal place**.
+
+This score will be used for an image-matching game and must reflect a fair and consistent measure of how well the user's image replicates the reference.
+
+      `;
   
       const result = await model.generateContent([
         prompt,
@@ -102,7 +119,22 @@ exports.createEntry = async (req, res) => {
   
       const response = await result.response;
       const text = response.text().trim();
-      const score = parseFloat(text);
+      console.log('AI Response raw text:', text); // Debug log
+      
+      // Make sure we've got a valid score
+      let score = parseFloat(text);
+      
+      // Check if score is NaN or out of range
+      if (isNaN(score)) {
+        console.error('Invalid score returned:', text);
+        score = 5; // Default to middle score if invalid
+      } else if (score < 0) {
+        score = 0;
+      } else if (score > 10) {
+        score = 10;
+      }
+      
+      console.log('Final score:', score); // Debug log
   
       // Create new table entry with the provided serial number and AI response
       const newEntry = new TableEntry({
