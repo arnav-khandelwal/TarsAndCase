@@ -1,6 +1,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('Pointless.png');
+    background-image: url('/Pointless.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center 55%;
