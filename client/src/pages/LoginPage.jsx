@@ -47,23 +47,26 @@ const LoginPage = () => {
       <div className="login-form-container">
         <h1>Login</h1>
         {error && <div className="alert alert-danger">{error}</div>}
+        <center>
         <form onSubmit={onSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">Username:</label>
             <input
               type="text"
               id="username"
               name="username"
+              placeholder='Enter your username'
               value={username}
               onChange={onChange}
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Password:</label>
             <input
               type="password"
               id="password"
+              placeholder='Enter your password'
               name="password"
               value={password}
               onChange={onChange}
@@ -78,6 +81,7 @@ const LoginPage = () => {
             {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
+        </center>
         <div className="form-footer">
           <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
         </div>

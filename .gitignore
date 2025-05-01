@@ -21,6 +21,7 @@ out/
 .next/
 
 # Uploads directory
+/uploads
 /uploads/*
 !/uploads/.gitkeep  # Keeps the directory but ignores files
 

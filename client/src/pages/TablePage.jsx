@@ -173,7 +173,7 @@ const TablePage = () => {
             style={{
               padding: '0.75rem 1.2rem',
               color: '#3498db',
-              backgroundColor: 'transparent',
+              backgroundColor: ' white',
               border: '2px solid #3498db',
               borderRadius: '0.375rem',
               transition: 'all 0.3s ease',
@@ -186,7 +186,7 @@ const TablePage = () => {
               e.target.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
+              e.target.style.backgroundColor = ' white';
               e.target.style.color = '#3498db';
             }}
           >

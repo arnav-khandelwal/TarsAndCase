@@ -1,6 +1,5 @@
 /* Base styles */
 * {
-  color: #1a9b32;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 1rem;
 }
@@ -35,7 +34,7 @@
   background-color: #ecf0f3;
   font-weight: 700;
   text-align: left;
-  color: #f1f3f6;
+  color: black;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;

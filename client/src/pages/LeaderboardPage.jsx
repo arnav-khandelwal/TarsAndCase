@@ -127,7 +127,7 @@ const LeaderboardPage = () => {
               e.target.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
+              e.target.style.backgroundColor = ' white';
               e.target.style.color = '#e74c3c';
             }}
           >
@@ -192,7 +192,7 @@ const LeaderboardPage = () => {
           onClick={() => setActiveTab('overall')}
           style={{
             padding: '10px 20px',
-            backgroundColor: activeTab === 'overall' ? '#3498db' : 'transparent',
+            backgroundColor: activeTab === 'overall' ? '#3498db' : ' white',
             color: activeTab === 'overall' ? 'white' : '#3498db',
             border: 'none',
             borderBottom: activeTab === 'overall' ? '2px solid #3498db' : 'none',
@@ -211,7 +211,7 @@ const LeaderboardPage = () => {
           onClick={() => setActiveTab('round1')}
           style={{
             padding: '10px 20px',
-            backgroundColor: activeTab === 'round1' ? '#e74c3c' : 'transparent',
+            backgroundColor: activeTab === 'round1' ? '#e74c3c' : ' white',
             color: activeTab === 'round1' ? 'white' : '#e74c3c',
             border: 'none',
             borderBottom: activeTab === 'round1' ? '2px solid #e74c3c' : 'none',
@@ -230,7 +230,7 @@ const LeaderboardPage = () => {
           onClick={() => setActiveTab('round2')}
           style={{
             padding: '10px 20px',
-            backgroundColor: activeTab === 'round2' ? '#2ecc71' : 'transparent',
+            backgroundColor: activeTab === 'round2' ? '#2ecc71' : ' white',
             color: activeTab === 'round2' ? 'white' : '#2ecc71',
             border: 'none',
             borderBottom: activeTab === 'round2' ? '2px solid #2ecc71' : 'none',

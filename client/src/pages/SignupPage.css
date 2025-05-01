@@ -1,13 +1,13 @@
 /* SignupPage.css */
 body{
-    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    /* background: linear-gradient(to right, #74ebd5, #acb6e5); */
 }
 .signup-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    /* background: linear-gradient(to right, #74ebd5, #acb6e5); */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 20px;
   }
