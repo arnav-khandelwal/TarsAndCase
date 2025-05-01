@@ -1,9 +1,37 @@
-/* General Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url(public/Pointless.png);
+    background-image: url('Pointless.png');
     background-size: cover;
     background-repeat: no-repeat;
+    background-position: center 55%;
+    background-attachment: fixed; /* This keeps the background fixed during scrolling */
+    height: 100vh;
+    margin: 0;
+    
+    /* Glassmorphism effect directly in body */
+    position: relative;
+  }
+  
+  /* Pseudo-element for the glassmorphism effect */
+  body::before {
+    content: "";
+    position: fixed; /* Changed from absolute to fixed */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  
+  /* Ensure content appears above the glassmorphism layer */
+  body > * {
+    position: relative;
+    z-index: 2;
   }
   
   .app-container {
@@ -115,14 +143,7 @@ body {
     min-height: 100vh;
   }
   
-  .login-form-container {
-    width: 100%;
-    max-width: 400px;
-    background-color: white;
-    padding: 32px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
+  
   
   .login-form-container h1 {
     margin-top: 0;
@@ -270,11 +291,11 @@ body {
   
   .form-footer p {
     margin: 0;
-    color: #6c757d;
+    color: #000;
   }
   
   .form-footer a {
-    color: #007bff;
+    color: #003a79;
     text-decoration: none;
   }
   
