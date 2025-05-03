@@ -18,7 +18,7 @@ module.exports = {
   
   // Gemini AI API configuration
   geminiApiKey: process.env.GEMINI_API_KEY,
-  REFERENCE_IMAGE_PATH: './uploads/reference2.jpeg',
+  REFERENCE_IMAGE_PATH: './uploads/',
   
   // File upload configuration
   uploadDir: path.join(__dirname, '../uploads'), // Absolute path

@@ -100,7 +100,6 @@ exports.getAllEntries = async (req, res) => {
     const entries = await PointlessEntry.find()
       .populate('user', 'username')
       .sort({ createdAt: -1 });
-    
     res.json(entries);
   } catch (err) {
     console.error('Error fetching all entries:', err);

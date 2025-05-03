@@ -68,7 +68,7 @@ const PointlessGame = () => {
       }
       
       // Randomly select 5 questions from the pool (or use all if fewer than 5)
-      const questionCount = Math.min(5, response.data.length);
+      const questionCount = Math.min(10, response.data.length);
       const shuffled = [...response.data].sort(() => 0.5 - Math.random());
       setQuestions(shuffled.slice(0, questionCount));
       setGameState('playing');
@@ -131,7 +131,7 @@ const PointlessGame = () => {
         currentQuestion.answers.forEach(ans => {
           if (ans && ans.answer && ans.answer.toLowerCase() === cleanedAnswer) {
             answerFound = true;
-            answerScore = ans.points || 0;
+            answerScore = ans.points || 100; // Get the score from the answer data
             setAnswerValid(true); // Answer found in the list is valid
           }
         });

@@ -475,7 +475,7 @@ const AdminPage = () => {
                   <td className="total-score">
                     {calculateTotalScore(entry.aiResponse, scores[entry._id])}
                   </td>
-                  <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
+                  <td>{new Date(entry.createdAt).toLocaleString()}</td>
                   <td>
                     <button 
                       style={{

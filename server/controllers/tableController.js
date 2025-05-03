@@ -38,7 +38,7 @@ exports.createEntry = async (req, res) => {
       }
 
       // Check if the reference image exists
-      const referenceImagePath = config.REFERENCE_IMAGE_PATH;
+      const referenceImagePath = `${config.REFERENCE_IMAGE_PATH}/reference${serialNumber}.jpg`;
       if (!fs.existsSync(referenceImagePath)) {
         // Remove the uploaded file to avoid cluttering storage
         if (req.file && req.file.path) {
@@ -171,7 +171,7 @@ This score will be used for an image-matching game and must reflect a fair and c
 // Get all entries for current user
 exports.getUserEntries = async (req, res) => {
   try {
-    const entries = await TableEntry.find({ user: req.user.id }).sort({ serialNumber: -1 });
+    const entries = await TableEntry.find({ user: req.user.id }).sort({ createdAt: -1 });
     
     // Get submission counts for each row
     const submissionCounts = {};
@@ -205,7 +205,7 @@ exports.getAllEntries = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
     
-    const entries = await TableEntry.find().populate('user', 'username').sort({ serialNumber: -1 });
+    const entries = await TableEntry.find().populate('user', 'username').sort({ createdAt: -1 });
     res.json(entries);
   } catch (err) {
     console.error(err.message);

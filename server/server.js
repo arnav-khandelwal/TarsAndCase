@@ -15,8 +15,6 @@ const fs = require('fs');
 // Initialize express app
 const app = express();
 
-console.log('Environment Variables:', process.env);
-
 // Connect to MongoDB
 connectDB();
 

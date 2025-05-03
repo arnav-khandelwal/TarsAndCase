@@ -4,223 +4,212 @@ const User = require('../models/User');
 
 // Get leaderboard data
 exports.getLeaderboard = async (req, res) => {
-  try {
-    // Fetch all entries from both games
-    const tableEntries = await TableEntry.find().populate('user', 'username');
-    const pointlessEntries = await PointlessEntry.find().populate('user', 'username');
-
-    // Initialize the response structure
-    const leaderboardData = {
-      overall: [],
-      round1: [],
-      round2: [],
-      byRow: {}
-    };
-
-    // Skip processing if no entries exist
-    if (!tableEntries.length && !pointlessEntries.length) {
-      return res.json(leaderboardData);
-    }
-
-    // Process Round 2 (image similarity) data
-    // Group entries by user and row to find max scores
-    const userRowScores = {};
-    
-    tableEntries.forEach(entry => {
-      if (!entry.user) return; // Skip entries without user info
-      
-      const userId = entry.user._id.toString();
-      const username = entry.user.username;
-      const rowNum = entry.serialNumber;
-      const aiScore = parseFloat(entry.aiResponse) || 0;
-      const adminScore = parseFloat(entry.adminScore) || 0;
-      const totalScore = aiScore + adminScore;
-      
-      // Initialize user data if not exists
-      if (!userRowScores[userId]) {
-        userRowScores[userId] = {
-          userId,
-          username,
-          rowScores: {}, // Store best score per row
-          submissionCount: 0
-        };
-      }
-      
-      // Track submission count
-      userRowScores[userId].submissionCount++;
-      
-      // Update max score for this row if better than previous
-      if (!userRowScores[userId].rowScores[rowNum] || 
-          totalScore > userRowScores[userId].rowScores[rowNum]) {
-        userRowScores[userId].rowScores[rowNum] = totalScore;
-      }
-    });
-    
-    // Calculate total score as sum of max scores per row
-    const round2Data = {};
-    Object.values(userRowScores).forEach(user => {
-      const totalScore = Object.values(user.rowScores).reduce((sum, score) => sum + score, 0);
-      const maxRowScore = Object.values(user.rowScores).length > 0 ? 
-        Math.max(...Object.values(user.rowScores)) : 0;
-      
-      round2Data[user.userId] = {
-        userId: user.userId,
-        username: user.username,
-        totalScore: totalScore,
-        maxScore: maxRowScore,
-        submissionCount: user.submissionCount,
-        rowCount: Object.keys(user.rowScores).length
+    try {
+      // Fetch all entries from both games
+      const tableEntries = await TableEntry.find().populate('user', 'username');
+      const pointlessEntries = await PointlessEntry.find().populate('user', 'username');
+  
+      // Initialize the response structure
+      const leaderboardData = {
+        overall: [],
+        round1: [],
+        round2: [],
+        byRow: {}
       };
-    });
-
-    // Process Round 1 (pointless) data
-    const round1Data = {};
-    
-    pointlessEntries.forEach(entry => {
-      if (!entry.user) return;
-      
-      const userId = entry.user._id.toString();
-      const username = entry.user.username;
-      const score = entry.score || 0;
-      
-      if (!round1Data[userId]) {
-        round1Data[userId] = {
-          userId,
-          username,
-          scores: [score],
-          totalScore: score,
-          pointlessAnswers: entry.isPointless ? 1 : 0,
-          questionCount: 1
-        };
-      } else {
-        round1Data[userId].scores.push(score);
-        round1Data[userId].totalScore += score;
-        round1Data[userId].pointlessAnswers += entry.isPointless ? 1 : 0;
-        round1Data[userId].questionCount += 1;
+  
+      // Skip processing if no entries exist
+      if (!tableEntries.length && !pointlessEntries.length) {
+        return res.json(leaderboardData);
       }
-    });
-
-    // Calculate overall scores (combining both rounds)
-    const overallData = {};
-    
-    // Add Round 2 users to overall
-    Object.values(round2Data).forEach(user => {
-      overallData[user.userId] = {
-        userId: user.userId,
-        username: user.username,
-        round2Score: user.totalScore,
-        round1Score: 0, // Default if no Round 1 data
-        totalScore: user.totalScore, // Start with Round 2 score
-        submissionCount: user.submissionCount
-      };
-    });
-    
-    // Add/update Round 1 users to overall
-    Object.values(round1Data).forEach(user => {
-      if (overallData[user.userId]) {
-        // User already has Round 2 data
-        overallData[user.userId].round1Score = user.totalScore;
-        overallData[user.userId].totalScore = 
-          overallData[user.userId].round2Score + user.totalScore;
-        overallData[user.userId].submissionCount += user.questionCount;
-      } else {
-        // User only has Round 1 data
-        overallData[user.userId] = {
+  
+      // Process Round 2 (image similarity) data
+      // Group entries by user and row to find max scores
+      const userRowScores = {};
+      
+      tableEntries.forEach(entry => {
+        if (!entry.user) return; // Skip entries without user info
+        
+        const userId = entry.user._id.toString();
+        const username = entry.user.username;
+        const rowNum = entry.serialNumber;
+        const aiScore = parseFloat(entry.aiResponse) || 0;
+        const adminScore = parseFloat(entry.adminScore) || 0;
+        const totalScore = aiScore + adminScore;
+        
+        // Initialize user data if not exists
+        if (!userRowScores[userId]) {
+          userRowScores[userId] = {
+            userId,
+            username,
+            rowScores: {}, // Store best score per row
+            submissionCount: 0
+          };
+        }
+        
+        // Track submission count
+        userRowScores[userId].submissionCount++;
+        
+        // Update max score for this row if better than previous
+        if (!userRowScores[userId].rowScores[rowNum] || 
+            totalScore > userRowScores[userId].rowScores[rowNum]) {
+          userRowScores[userId].rowScores[rowNum] = totalScore;
+        }
+      });
+      
+      // Calculate total score as sum of max scores per row
+      const round2Data = {};
+      Object.values(userRowScores).forEach(user => {
+        const totalScore = Object.values(user.rowScores).reduce((sum, score) => sum + score, 0);
+        const maxRowScore = Object.values(user.rowScores).length > 0 ? 
+          Math.max(...Object.values(user.rowScores)) : 0;
+        
+        round2Data[user.userId] = {
           userId: user.userId,
           username: user.username,
-          round1Score: user.totalScore,
-          round2Score: 0, // No Round 2 data
-          totalScore: user.totalScore,
-          submissionCount: user.questionCount
+          totalScore: totalScore,
+          maxScore: maxRowScore,
+          submissionCount: user.submissionCount,
+          rowCount: Object.keys(user.rowScores).length
         };
-      }
-    });
-
-    // Format Round 2 leaderboard
-    const round2Leaderboard = Object.values(round2Data).map(user => ({
-      userId: user.userId,
-      username: user.username,
-      totalScore: user.totalScore,
-      maxScore: user.maxScore,
-      submissionCount: user.submissionCount,
-      rowCount: user.rowCount,
-      averageScore: user.totalScore / (user.rowCount || 1) // Avoid division by zero
-    }));
-
-    // Sort by total score (descending)
-    round2Leaderboard.sort((a, b) => b.totalScore - a.totalScore);
-
-    // Format Round 1 leaderboard - For Pointless, LOWER scores are better!
-    const round1Leaderboard = Object.values(round1Data).map(user => ({
-      userId: user.userId,
-      username: user.username,
-      totalScore: user.totalScore,
-      pointlessAnswers: user.pointlessAnswers,
-      questionCount: user.questionCount
-    }));
-
-    // Sort by total score (ascending for Pointless)
-    round1Leaderboard.sort((a, b) => a.totalScore - b.totalScore);
-
-    // Format overall leaderboard (combined scores)
-    const overallLeaderboard = Object.values(overallData);
-    
-    // Sort by total score (descending)
-    overallLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
-
-    // Calculate row-specific leaderboards (only for Round 2)
-    const rowLeaderboards = {};
-    
-    tableEntries.forEach(entry => {
-      if (!entry.user) return;
+      });
+  
+      // Process Round 1 (pointless) data
+      const round1Data = {};
       
-      const rowNum = entry.serialNumber;
-      const userId = entry.user._id.toString();
-      const username = entry.user.username;
-      const aiScore = parseFloat(entry.aiResponse) || 0;
-      const adminScore = parseFloat(entry.adminScore) || 0;
-      const totalScore = aiScore + adminScore;
+      pointlessEntries.forEach(entry => {
+        if (!entry.user) return;
+        
+        const userId = entry.user._id.toString();
+        const username = entry.user.username;
+        const score = entry.score || 0;
+        
+        if (!round1Data[userId]) {
+          round1Data[userId] = {
+            userId,
+            username,
+            scores: [score],
+            totalScore: score,
+            pointlessAnswers: entry.isPointless ? 1 : 0,
+            questionCount: 1
+          };
+        } else {
+          round1Data[userId].scores.push(score);
+          round1Data[userId].totalScore += score;
+          round1Data[userId].pointlessAnswers += entry.isPointless ? 1 : 0;
+          round1Data[userId].questionCount += 1;
+        }
+      });
+  
+      // Calculate overall scores (combining both rounds)
+      const overallData = {};
       
-      if (!rowLeaderboards[rowNum]) {
-        rowLeaderboards[rowNum] = {};
-      }
-
-      if (!rowLeaderboards[rowNum][userId]) {
-        rowLeaderboards[rowNum][userId] = {
+      // First populate all users with Round 1 data (set to 0 if not found)
+      const allUserIds = new Set([
+        ...Object.keys(round1Data),
+        ...Object.keys(round2Data)
+      ]);
+      
+      Array.from(allUserIds).forEach(userId => {
+        const round1User = round1Data[userId];
+        const round2User = round2Data[userId];
+        
+        overallData[userId] = {
           userId,
-          username,
-          maxScore: totalScore,
-          aiScore: aiScore,
-          adminScore: adminScore
+          username: round1User?.username || round2User?.username,
+          round1Score: round1User?.totalScore || 0,
+          round2Score: round2User?.totalScore || 0,
+          // Calculate overall score as: 1000 - round1Score + round2Score
+          totalScore: 1000 - (round1User?.totalScore || 0) + (round2User?.totalScore || 0),
+          submissionCount: (round1User?.questionCount || 0) + (round2User?.submissionCount || 0)
         };
-      } else if (totalScore > rowLeaderboards[rowNum][userId].maxScore) {
-        rowLeaderboards[rowNum][userId].maxScore = totalScore;
-        rowLeaderboards[rowNum][userId].aiScore = aiScore;
-        rowLeaderboards[rowNum][userId].adminScore = adminScore;
-      }
-    });
+      });
+  
+      // Format Round 2 leaderboard
+      const round2Leaderboard = Object.values(round2Data).map(user => ({
+        userId: user.userId,
+        username: user.username,
+        totalScore: user.totalScore,
+        maxScore: user.maxScore,
+        submissionCount: user.submissionCount,
+        rowCount: user.rowCount,
+        averageScore: user.totalScore / (user.rowCount || 1) // Avoid division by zero
+      }));
+  
+      // Sort by total score (descending)
+      round2Leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+  
+      // Format Round 1 leaderboard - For Pointless, LOWER scores are better!
+      const round1Leaderboard = Object.values(round1Data).map(user => ({
+        userId: user.userId,
+        username: user.username,
+        totalScore: user.totalScore,
+        pointlessAnswers: user.pointlessAnswers,
+        questionCount: user.questionCount
+      }));
+  
+      // Sort by total score (ascending for Pointless)
+      round1Leaderboard.sort((a, b) => a.totalScore - b.totalScore);
+  
+      // Format overall leaderboard (combined scores)
+      const overallLeaderboard = Object.values(overallData);
+      
+      // Sort by total score (descending)
+      overallLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
+  
+      // Calculate row-specific leaderboards (only for Round 2)
+      const rowLeaderboards = {};
+      
+      tableEntries.forEach(entry => {
+        if (!entry.user) return;
+        
+        const rowNum = entry.serialNumber;
+        const userId = entry.user._id.toString();
+        const username = entry.user.username;
+        const aiScore = parseFloat(entry.aiResponse) || 0;
+        const adminScore = parseFloat(entry.adminScore) || 0;
+        const totalScore = aiScore + adminScore;
+        
+        if (!rowLeaderboards[rowNum]) {
+          rowLeaderboards[rowNum] = {};
+        }
+  
+        if (!rowLeaderboards[rowNum][userId]) {
+          rowLeaderboards[rowNum][userId] = {
+            userId,
+            username,
+            maxScore: totalScore,
+            aiScore: aiScore,
+            adminScore: adminScore
+          };
+        } else if (totalScore > rowLeaderboards[rowNum][userId].maxScore) {
+          rowLeaderboards[rowNum][userId].maxScore = totalScore;
+          rowLeaderboards[rowNum][userId].aiScore = aiScore;
+          rowLeaderboards[rowNum][userId].adminScore = adminScore;
+        }
+      });
+  
+      // Convert row leaderboards to arrays and sort by max score
+      const formattedRowLeaderboards = {};
+      
+      Object.keys(rowLeaderboards).forEach(rowNum => {
+        formattedRowLeaderboards[rowNum] = Object.values(rowLeaderboards[rowNum])
+          .sort((a, b) => b.maxScore - a.maxScore);
+      });
+  
+      // Set the final leaderboard data
+      leaderboardData.overall = overallLeaderboard;
+      leaderboardData.round1 = round1Leaderboard;
+      leaderboardData.round2 = round2Leaderboard;
+      leaderboardData.byRow = formattedRowLeaderboards;
+  
+      res.json(leaderboardData);
+    } catch (err) {
+      console.error('Error generating leaderboard:', err);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  };
 
-    // Convert row leaderboards to arrays and sort by max score
-    const formattedRowLeaderboards = {};
-    
-    Object.keys(rowLeaderboards).forEach(rowNum => {
-      formattedRowLeaderboards[rowNum] = Object.values(rowLeaderboards[rowNum])
-        .sort((a, b) => b.maxScore - a.maxScore);
-    });
-
-    // Set the final leaderboard data
-    leaderboardData.overall = overallLeaderboard;
-    leaderboardData.round1 = round1Leaderboard;
-    leaderboardData.round2 = round2Leaderboard;
-    leaderboardData.byRow = formattedRowLeaderboards;
-
-    res.json(leaderboardData);
-  } catch (err) {
-    console.error('Error generating leaderboard:', err);
-    res.status(500).json({ message: 'Server Error' });
-  }
-};
-
+  
 // Get user ranking
 exports.getUserRanking = async (req, res) => {
   try {
