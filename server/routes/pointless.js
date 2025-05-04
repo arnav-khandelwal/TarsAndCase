@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pointlessController = require('../controllers/PointlessController');
+const pointlessController = require('../controllers/pointlessController');
 const auth = require('../middleware/auth');
 
 // @route   GET api/pointless/questions
