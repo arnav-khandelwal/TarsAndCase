@@ -7,7 +7,7 @@ const PointlessGame = () => {
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [gameState, setGameState] = useState('loading'); // loading, playing, showing-score, summary
-  const [timer, setTimer] = useState(90);
+  const [timer, setTimer] = useState(12);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [currentScore, setCurrentScore] = useState(null);
@@ -28,31 +28,31 @@ const PointlessGame = () => {
   // Check if user has already played the game
   useEffect(() => {
     const checkGamePlayStatus = async () => {
-      try {
-        const config = {
-          headers: {
-            'x-auth-token': localStorage.getItem('token')
+        try {
+          const config = {
+            headers: {
+              'x-auth-token': localStorage.getItem('token')
+            }
+          };
+          
+          const response = await axios.get('/api/pointless/history', config);
+          
+          if (response.data && response.data.length === 10) {
+            setAlreadyPlayed(true);
+            setError('You have already played Round 1. Each player can only play once.');
+            setGameState('error');
+          } else {
+            fetchQuestions();
           }
-        };
-        
-        const response = await axios.get('/api/pointless/history', config);
-        
-        if (response.data && response.data.length === 10) {
-          setAlreadyPlayed(true);
-          setError('You have already played Round 1. Each player can only play once.');
+        } catch (err) {
+          console.error('Error checking game play status:', err);
+          setError('Failed to check game status. Please try again.');
           setGameState('error');
-        } else {
-          fetchQuestions();
         }
-      } catch (err) {
-        console.error('Error checking game play status:', err);
-        setError('Failed to check game status. Please try again.');
-        setGameState('error');
-      }
-    };
-    
-    checkGamePlayStatus();
-  }, []);
+      };
+      
+      checkGamePlayStatus();
+    }, []);
 
   // Load questions and check for saved game state
   const fetchQuestions = async () => {
@@ -80,27 +80,30 @@ const PointlessGame = () => {
         const response = await axios.get(`/api/pointless/check-game/${savedGameId}`, config);
         
         if (response.data.valid) {
+          // Find the first unanswered question
+          let firstUnansweredIndex = 0;
+          const gameProgress = localStorage.getItem(`pointlessGameProgress_${savedGameId}`);
+          
+          if (gameProgress) {
+            const progress = JSON.parse(gameProgress);
+            firstUnansweredIndex = progress.answeredQuestions.length;
+            
+            // If all questions are answered, show summary
+            if (firstUnansweredIndex >= savedQuestions.length) {
+              setGameState('summary');
+              return;
+            }
+          }
+
           setQuestions(savedQuestions);
-          setCurrentQuestionIndex(savedIndex);
+          setCurrentQuestionIndex(firstUnansweredIndex); // Start from first unanswered question
           setScore(savedScore);
           setScoreHistory(savedHistory);
-          setSubmittedAnswer(savedAnswer);
-          setCurrentScore(savedCurrentScore);
+          setSubmittedAnswer(null); // Reset submitted answer for new question
+          setCurrentScore(null);
           setGameId(savedGameId);
           setLoadedFromStorage(true);
-          
-          // Determine current game state
-          if (savedIndex >= savedQuestions.length) {
-            setGameState('summary');
-          } else if (savedAnswer !== null) {
-            setGameState('playing');
-            setTimer(90);
-            setTimerWidth(100);
-          } else {
-            setGameState('playing');
-            setTimer(90);
-            setTimerWidth(100);
-          }
+          setGameState('playing');
           return;
         }
       }
@@ -134,6 +137,12 @@ const PointlessGame = () => {
       };
       
       localStorage.setItem('pointlessGameState', JSON.stringify(initialGameState));
+      
+      // Initialize game progress
+      localStorage.setItem(`pointlessGameProgress_${newGameId}`, JSON.stringify({
+        answeredQuestions: []
+      }));
+      
       setGameId(newGameId);
       setQuestions(shuffled.slice(0, questionCount));
       setGameState('playing');
@@ -143,7 +152,6 @@ const PointlessGame = () => {
       setGameState('error');
     }
   };
-
   // Update saved game state when relevant state changes
   const updateSavedGameState = () => {
     if (!gameId) return;
@@ -174,7 +182,7 @@ const PointlessGame = () => {
       interval = setInterval(() => {
         setTimer(prevTimer => {
           const newTimer = prevTimer - 1;
-          setTimerWidth((newTimer / 90) * 100);
+          setTimerWidth((newTimer / 12) * 100);
           return newTimer;
         });
       }, 1000);
@@ -264,7 +272,7 @@ const PointlessGame = () => {
         currentQuestion.answers.forEach(ans => {
           if (ans && ans.answer && ans.answer.toLowerCase() === cleanedAnswer) {
             answerFound = true;
-            answerScore = ans.points || 100;
+            answerScore = ans.points;
             setAnswerValid(true);
           }
         });
@@ -283,6 +291,19 @@ const PointlessGame = () => {
         valid: answerFound || answerToSubmit.trim() === ''
       }, config);
       
+      // Update game progress in localStorage
+      const gameProgress = localStorage.getItem(`pointlessGameProgress_${gameId}`);
+      let progress = gameProgress ? JSON.parse(gameProgress) : { answeredQuestions: [] };
+      
+      progress.answeredQuestions.push({
+        questionId: currentQuestion.id,
+        answer: answerToSubmit,
+        score: answerScore,
+        valid: answerFound
+      });
+      
+      localStorage.setItem(`pointlessGameProgress_${gameId}`, JSON.stringify(progress));
+      
       // Update state
       setSubmittedAnswer(answerToSubmit);
       setCurrentScore(answerScore);
@@ -293,6 +314,7 @@ const PointlessGame = () => {
       setError(err.message || 'Failed to submit answer. Please try again.');
     }
   };
+
 
   const showScore = () => {
     setScore(prevScore => prevScore + (currentScore || 0));
@@ -318,24 +340,45 @@ const PointlessGame = () => {
   };
 
   const moveToNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+    // Update score history
+    const newScoreHistory = [
+      ...scoreHistory, 
+      { 
+        question: questions[currentQuestionIndex].question || 'Unknown question', 
+        answer: submittedAnswer || "(No answer)", 
+        score: currentScore || 0,
+        valid: answerValid
+      }
+    ];
+    
+    setScoreHistory(newScoreHistory);
+    setScore(prevScore => prevScore + (currentScore || 0));
+    
+    // Check if there are more questions
+    const gameProgress = localStorage.getItem(`pointlessGameProgress_${gameId}`);
+    const progress = gameProgress ? JSON.parse(gameProgress) : { answeredQuestions: [] };
+    
+    if (progress.answeredQuestions.length < questions.length) {
+      // Move to next unanswered question
+      setCurrentQuestionIndex(progress.answeredQuestions.length);
       setAnswer('');
       setSubmittedAnswer(null);
-      setTimer(90);
+      setTimer(12);
       setTimerWidth(100);
       setGameState('playing');
       setCurrentScore(null);
       setAnswerValid(true);
       updateSavedGameState();
     } else {
+      // Game completed
       setGameState('summary');
       localStorage.removeItem('pointlessGameState');
+      localStorage.removeItem(`pointlessGameProgress_${gameId}`);
       
       axios.post('/api/pointless/finalize', { 
         gameId,
-        totalScore: score,
-        scoreHistory
+        totalScore: score + (currentScore || 0),
+        scoreHistory: newScoreHistory
       }, {
         headers: {
           'x-auth-token': localStorage.getItem('token')
