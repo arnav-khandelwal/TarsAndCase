@@ -28,4 +28,9 @@ router.get('/history', auth, pointlessController.getUserHistory);
 // @access  Private (Admin)
 router.get('/all', auth, pointlessController.getAllEntries);
 
+// Add these routes
+router.get('/check-game/:gameId', auth, pointlessController.checkGame);
+router.get('/check-answer/:gameId/:questionId', auth, pointlessController.checkAnswer);
+
+
 module.exports = router;

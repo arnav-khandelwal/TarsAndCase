@@ -10,6 +10,10 @@ const PointlessEntrySchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  gameId: {
+    type: Number,
+    required: true
+  },
   answer: {
     type: String,
     required: true

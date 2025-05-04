@@ -9,7 +9,7 @@
           { "answer": "Mars", "points": 80 },
           { "answer": "Jupiter", "points": 95 },
           { "answer": "Saturn", "points": 80 },
-          { "answer": "Uranus", "points": 0 },
+          { "answer": "Uranus", "points": 2 },
           { "answer": "Neptune", "points": 10 }
         ]
       },
